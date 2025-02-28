@@ -97,7 +97,12 @@ struct GameBoardView: View {
         MagnifyGesture()
             .onChanged { value in
                 let newScale = lastScale * value.magnification
-                scale = min(max(newScale, 0.5), 10)
+                // prevent more than 10x zoom and prevent zoom out such that new view area < 10% of eligible screen space
+                // proposedArea = SOME_SCALE * CGFloat(board.width) * baseCellSize
+                // validArea = UIScreen.main.bounds.width * UIScreen.main.bounds.height
+                let boundaryScale = 0.01 * UIScreen.main.bounds.width * UIScreen.main.bounds.height / (CGFloat(board.width * board.height) * baseCellSize)
+                print(boundaryScale)
+                scale = min(max(newScale, boundaryScale), 10)
                 let oldCellSize = cellSize
                 cellSize = baseCellSize * scale
                 updateInitialOffsetForZoom(oldCellSize: oldCellSize, newCellSize: cellSize)

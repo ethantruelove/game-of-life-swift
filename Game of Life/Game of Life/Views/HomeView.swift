@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct HomeView: View {
-    @State private var board = Board(width: 10, height: 30)
+    @State private var board = Board(width: 100, height: 100)
     @State private var tickTime: Double = 0.1
     // start at high number to prevent wasted checking whenever autoplay is off
     @State private var timer = Timer.publish(every: 1000000, on: .main, in: .common).autoconnect()

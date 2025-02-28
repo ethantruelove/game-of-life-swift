@@ -76,8 +76,10 @@ class Board {
     }
     
     func randomize() {
+        var newGrid = grid
         for i in 0..<grid.count {
-            grid[i] = Bool.random()
+            newGrid[i] = Bool.random()
         }
+        grid = newGrid
     }
 }
