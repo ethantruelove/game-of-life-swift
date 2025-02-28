@@ -8,13 +8,14 @@
 import SwiftUI
 
 struct HomeView: View {
-    @State private var board = Board(width: 20, height: 30)
+    @State private var board = Board(width: 10, height: 30)
     @State private var tickTime: Double = 0.1
     // start at high number to prevent wasted checking whenever autoplay is off
     @State private var timer = Timer.publish(every: 1000000, on: .main, in: .common).autoconnect()
     @State private var editMode = false
     @State private var baseCellSize: CGFloat = 25
     @State private var cellSize: CGFloat = 25
+    @State private var initialOffset = CGSize.zero
     @State private var offset = CGSize.zero
     @State private var lastScale: CGFloat = 1.0
     
@@ -46,16 +47,27 @@ struct HomeView: View {
 
                 }
             }
+            .zIndex(1)
             
             GameBoardView(
                 board: $board,
                 cellSize: $cellSize,
                 editMode: $editMode,
+                initialOffset: $initialOffset,
                 offset: $offset,
                 lastScale: $lastScale,
                 baseCellSize: baseCellSize)
             .frame(maxWidth: .infinity, maxHeight: UIScreen.main.bounds.height * 0.75)
             .clipped()
+            .onAppear() {
+                let screenWidth = UIScreen.main.bounds.width
+                let screenHeight = UIScreen.main.bounds.height * 0.75
+                let gridWidth = CGFloat(board.width) * cellSize
+                let gridheight = CGFloat(board.height) * cellSize
+
+                initialOffset = CGSize(width: max(0, (screenWidth - gridWidth) / 2), height: max(0, (screenHeight - gridheight) / 2))
+                print("Setting initial offset to: \(initialOffset)")
+            }
             .onReceive(timer) { _ in
                 if board.autoplay {
                     board.tick()

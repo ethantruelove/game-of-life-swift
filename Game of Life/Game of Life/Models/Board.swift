@@ -23,8 +23,8 @@ class Board {
     }
     
     private func index(x: Int, y: Int) -> Int {
-        guard x >= 0, y >= 0, x * y < grid.count else { return -1 }
-        return ((y + height) % height) * width + ((x + width) % width)
+        guard x >= 0, x < width, y >= 0, y < height else { return -1 }
+        return y * width + x
     }
     
     func setCell(x: Int, y: Int, state: Bool) {
