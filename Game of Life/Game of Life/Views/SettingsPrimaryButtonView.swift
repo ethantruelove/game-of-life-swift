@@ -24,7 +24,7 @@ struct SettingsPrimaryButtonView: View {
                 .frame(width: 20, height: 20)
                 .scaledToFit()
                 .padding()
-                .background(Circle().fill(Color.gray.opacity(0.1)))
+                .background(Circle().fill(Color.gray.opacity(0.2)))
         }
     }
 }
