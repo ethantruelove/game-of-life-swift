@@ -14,6 +14,7 @@ class Board {
     let height: Int
     var grid: [Bool]
     var autoplay: Bool
+    private var lastToggledIndex: Int = -1
     
     init(width: Int, height: Int) {
         self.width = width
@@ -40,7 +41,11 @@ class Board {
     }
     
     func toggleCell(x: Int, y: Int) {
-        grid[index(x: x, y: y)].toggle()
+        let toggleIndex = index(x: x, y: y)
+        if toggleIndex != lastToggledIndex {
+            grid[toggleIndex].toggle()
+            lastToggledIndex = toggleIndex
+        }
     }
     
     func tick() {

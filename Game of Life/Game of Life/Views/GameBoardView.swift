@@ -10,16 +10,14 @@ import SwiftUI
 struct GameBoardView: View {
     @Binding var board: Board
     @Binding var cellSize: CGFloat
-    @Binding var editMode: Bool
+    @Binding var editMode: EditMode
     @Binding var initialOffset: CGSize
     @Binding var offset: CGSize
-    @Binding var lastScale: CGFloat
     let baseCellSize: CGFloat
     
+    @State private var lastScale: CGFloat = 1
     @State private var scale: CGFloat = 1
     @State private var lastOffset = CGSize.zero
-    
-    @State private var twoFingerDrag = false
     
     var body: some View {
         LazyVGrid(columns: Array(repeating: GridItem(.fixed(cellSize), spacing: 0), count: board.width), spacing: 0) {
@@ -49,21 +47,34 @@ struct GameBoardView: View {
     private func handleEditGesture(_ value: DragGesture.Value) {
         let totalCellWidth = CGFloat(board.width) * cellSize
         let totalCellHeight = CGFloat(board.height) * cellSize
-
+        
         let touchX = value.location.x
         let touchY = value.location.y
         
         // only factor in the initialOffset if the board is zoomed out enough to have offset spacing
         let gridX = totalCellWidth > UIScreen.main.bounds.width ? touchX - offset.width : touchX - offset.width - initialOffset.width
-        let gridY = totalCellHeight > UIScreen.main.bounds.height ? touchY - offset.height : touchY - offset.height - initialOffset.height
+        // y coordinate is from top of view (does not have access to full height) so no need for initial offset
+        let gridY = touchY - offset.height
         
         let col = Int(floor(gridX / totalCellWidth * CGFloat(board.width)))
         let row = Int(floor(gridY / totalCellHeight * CGFloat(board.height)))
         
+        print("-----------")
+        print("Touching \(value.location)")
+        print("Offset \(offset) Initial offset \(initialOffset)")
         print("Determined touch of cell: (\(col), \(row))")
         
         if col >= 0, col < board.width, row >= 0, row < board.height {
-            board.toggleCell(x: col, y: row)
+            switch editMode {
+            case .fill:
+                board.setCell(x: col, y: row, state: true)
+            case .erase:
+                board.setCell(x: col, y: row, state: false)
+            case .toggle:
+                board.toggleCell(x: col, y: row)
+            case .none:
+                break
+            }
         }
     }
     
@@ -80,14 +91,14 @@ struct GameBoardView: View {
     private var singleFingerDragGesture: some Gesture {
         DragGesture(minimumDistance: 0)
             .onChanged { value in
-                if editMode {
-                    handleEditGesture(value)
-                } else {
+                if editMode == .none {
                     handlePanGesture(value)
+                } else {
+                    handleEditGesture(value)
                 }
             }
             .onEnded { value in
-                if !editMode {
+                if editMode == .none {
                     lastOffset = offset
                 }
             }
@@ -100,9 +111,10 @@ struct GameBoardView: View {
                 // prevent more than 10x zoom and prevent zoom out such that new view area < 10% of eligible screen space
                 // proposedArea = SOME_SCALE * CGFloat(board.width) * baseCellSize
                 // validArea = UIScreen.main.bounds.width * UIScreen.main.bounds.height
-                let boundaryScale = 0.01 * UIScreen.main.bounds.width * UIScreen.main.bounds.height / (CGFloat(board.width * board.height) * baseCellSize)
-                print(boundaryScale)
-                scale = min(max(newScale, boundaryScale), 10)
+                //let boundaryScale = 0.01 * UIScreen.main.bounds.width * UIScreen.main.bounds.height / (CGFloat(board.width * board.height) * baseCellSize)
+                //print(boundaryScale)
+                //scale = min(max(newScale, boundaryScale), 10)
+                scale = min(max(newScale, 0.1), 10)
                 let oldCellSize = cellSize
                 cellSize = baseCellSize * scale
                 updateInitialOffsetForZoom(oldCellSize: oldCellSize, newCellSize: cellSize)
@@ -133,4 +145,33 @@ struct GameBoardView: View {
         print("Zoom update - Old size: \(oldCellSize), New size: \(newCellSize)")
         print("New initialOffset: \(initialOffset)")
     }
+}
+
+#Preview {
+    struct Preview: View {
+        @State private var board: Board = Board(width: 15, height: 25)
+        @State private var cellSize: CGFloat = 25
+        @State private var editMode: EditMode = .none
+        @State private var initialOffset: CGSize = .zero
+        @State private var offset: CGSize = .zero
+        @State private var lastScale: CGFloat = 1
+        let baseCellSize: CGFloat = 25
+        
+        init() {
+            board.randomize()
+        }
+        
+        var body: some View {
+            GameBoardView(
+                board: $board,
+                cellSize: $cellSize,
+                editMode: $editMode,
+                initialOffset: $initialOffset,
+                offset: $offset,
+                baseCellSize: baseCellSize
+            )
+        }
+    }
+    
+    return Preview()
 }
