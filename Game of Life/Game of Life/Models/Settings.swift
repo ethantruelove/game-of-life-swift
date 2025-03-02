@@ -18,6 +18,14 @@ class Settings {
         return UserDefaults.standard.object(forKey: Keys.initialLaunch) as? Date
     }
     
+    var launchCount: Int {
+        return UserDefaults.standard.integer(forKey: Keys.launchCount)
+    }
+    
+    func setLaunchCount(_ launchCount: Int) {
+        UserDefaults.standard.set(launchCount, forKey: Keys.launchCount)
+    }
+    
     var boardWidth: Int {
         return UserDefaults.standard.integer(forKey: Keys.boardWidth)
     }
@@ -41,6 +49,7 @@ class Settings {
     func setTickTime(_ tickTime: Double) {
         UserDefaults.standard.set(tickTime, forKey: Keys.tickTime)
     }
+
     
     func loadDefaults() {
         let defaults: [String: Any] = [

@@ -9,13 +9,16 @@ import SwiftUI
 
 @main
 struct Game_of_LifeApp: App {
+    let launchCount: Int = Settings.shared.launchCount
+    
     init() {
         Settings.shared.loadDefaults()
+        Settings.shared.setLaunchCount(launchCount + 1)
     }
     
     var body: some Scene {
         WindowGroup {
-            HomeView()
+            HomeView(launchCount: launchCount)
         }
     }
 }

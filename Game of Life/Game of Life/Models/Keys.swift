@@ -7,6 +7,7 @@
 
 struct Keys {
     static let initialLaunch = "Initial Launch"
+    static let launchCount = "Launch Count"
     static let boardWidth = "Board Width"
     static let boardHeight = "Board Height"
     static let tickTime = "Tick Time"

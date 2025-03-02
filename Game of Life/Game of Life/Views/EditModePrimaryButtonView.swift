@@ -20,7 +20,7 @@ struct EditModePrimaryButtonView: View {
             Image(systemName: editMode.iconName)
                 .font(.system(size: 25))
                 .foregroundColor(showEditModes ? .blue : .gray)
-                .shadow(color: .white, radius: 3)
+                .shadow(color: Color("dead"), radius: 3)
                 .rotationEffect(Angle(degrees: showEditModes ? 360 : 0))
                 .frame(width: 20, height: 20)
                 .scaledToFit()

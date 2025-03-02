@@ -9,6 +9,9 @@ import SwiftUI
 import Combine
 
 struct HomeView: View {
+    private let launchCount: Int
+    @State private var showRateView: Bool
+    
     @State private var board: Board
     @State private var tickTime: Double = 0
     // start at high number to prevent wasted checking whenever autoplay is off
@@ -28,7 +31,16 @@ struct HomeView: View {
     @State private var boardViewWidth: CGFloat = 0
     @State private var boardViewHeight: CGFloat = 0
     
-    init() {
+    init(launchCount: Int) {
+        self.launchCount = launchCount
+        
+        if launchCount == 2 {
+            self.showRateView = true
+        }
+        else {
+            self.showRateView = false
+        }
+        
         let sWidth = Settings.shared.boardWidth
         let sHeight = Settings.shared.boardHeight
         let sTickTime = Settings.shared.tickTime
@@ -40,78 +52,93 @@ struct HomeView: View {
     }
     
     var body: some View {
-        // attribution: https://stackoverflow.com/questions/60021403/how-to-get-height-and-width-of-view-or-screen-in-swiftui
-        // attribution: https://developer.apple.com/documentation/swiftui/geometryreader
-        GeometryReader { geometry in
-            ZStack(alignment: .bottom) {
-                GameBoardView(
-                    board: $board,
-                    cellSize: $cellSize,
-                    editMode: $editMode,
-                    initialOffset: $initialOffset,
-                    offset: $offset,
-                    lastOffset: $lastOffset,
-                    scale: $scale,
-                    lastScale: $lastScale,
-                    baseCellSize: baseCellSize)
-                .frame(width: geometry.size.width, height: geometry.size.height)
-                .clipped()
-                .onAppear() {
-                    // TODO: see if this is still needed after switching to Canvas
-                    let screenWidth = geometry.size.width
-                    let screenHeight = geometry.size.height * 0.75
-                    let gridWidth = CGFloat(board.width) * cellSize
-                    let gridheight = CGFloat(board.height) * cellSize
-                    
-                    initialOffset = CGSize(width: max(0, (screenWidth - gridWidth) / 2), height: max(0, (screenHeight - gridheight) / 2))
-                    print("Setting initial offset to: \(initialOffset)")
-                    
-                    let minWidth = geometry.size.width / CGFloat(board.width)
-                    let minHeight = geometry.size.height / CGFloat(board.height)
-                    baseCellSize = min(minWidth, minHeight)
-                    cellSize = baseCellSize
-                    
-                    boardViewWidth = geometry.size.width
-                    boardViewHeight = geometry.size.height
-                    print("Initial cellSize \(cellSize)")
-                }
-                .onReceive(timer) { _ in
-                    if board.autoplay {
-                        board.tick()
-                    }
-                }
-                
-                VStack() {
-                    HStack {
-                        Spacer()
-                        EditModeView(
-                            showEditModes: $showSettings,
-                            editMode: $editMode
-                        )
-                        .padding(.trailing)
-                    }
-                    
-                    Spacer()
-                    MenuView(
+        ZStack {
+            // attribution: https://stackoverflow.com/questions/60021403/how-to-get-height-and-width-of-view-or-screen-in-swiftui
+            // attribution: https://developer.apple.com/documentation/swiftui/geometryreader
+            GeometryReader { geometry in
+                ZStack(alignment: .bottom) {
+                    GameBoardView(
+                        board: $board,
+                        cellSize: $cellSize,
+                        editMode: $editMode,
+                        initialOffset: $initialOffset,
                         offset: $offset,
                         lastOffset: $lastOffset,
                         scale: $scale,
                         lastScale: $lastScale,
-                        cellSize: $cellSize,
-                        baseCellSize: $baseCellSize,
-                        board: $board,
-                        timer: $timer,
-                        tickTime: $tickTime,
-                        boardViewWidth: $boardViewWidth,
-                        boardViewHeight: $boardViewHeight
-                    )
-                    .background(Color("dead"))
-                    .padding(.bottom)
+                        baseCellSize: baseCellSize)
+                    .frame(width: geometry.size.width, height: geometry.size.height)
+                    .clipped()
+                    .onAppear() {
+                        // TODO: see if this is still needed after switching to Canvas
+                        let screenWidth = geometry.size.width
+                        let screenHeight = geometry.size.height * 0.75
+                        let gridWidth = CGFloat(board.width) * cellSize
+                        let gridheight = CGFloat(board.height) * cellSize
+                        
+                        initialOffset = CGSize(width: max(0, (screenWidth - gridWidth) / 2), height: max(0, (screenHeight - gridheight) / 2))
+                        print("Setting initial offset to: \(initialOffset)")
+                        
+                        let minWidth = geometry.size.width / CGFloat(board.width)
+                        let minHeight = geometry.size.height / CGFloat(board.height)
+                        baseCellSize = min(minWidth, minHeight)
+                        cellSize = baseCellSize
+                        
+                        boardViewWidth = geometry.size.width
+                        boardViewHeight = geometry.size.height
+                        print("Initial cellSize \(cellSize)")
+                    }
+                    .onReceive(timer) { _ in
+                        if board.autoplay {
+                            board.tick()
+                        }
+                    }
+                    
+                    VStack() {
+                        HStack {
+                            Spacer()
+                            EditModeView(
+                                showEditModes: $showSettings,
+                                editMode: $editMode
+                            )
+                            .padding(.trailing)
+                        }
+                        
+                        Spacer()
+                        MenuView(
+                            offset: $offset,
+                            lastOffset: $lastOffset,
+                            scale: $scale,
+                            lastScale: $lastScale,
+                            cellSize: $cellSize,
+                            baseCellSize: $baseCellSize,
+                            board: $board,
+                            timer: $timer,
+                            tickTime: $tickTime,
+                            boardViewWidth: $boardViewWidth,
+                            boardViewHeight: $boardViewHeight
+                        )
+                        .background(Color("dead"))
+                        .padding(.bottom)
+                    }
+                    .frame(width: geometry.size.width, height: geometry.size.height)
                 }
-                .frame(width: geometry.size.width, height: geometry.size.height)
+            }
+            .edgesIgnoringSafeArea(.bottom)
+        
+            if showRateView {
+                ZStack {
+                    Color.black.opacity(0.4)
+                        .edgesIgnoringSafeArea(.all)
+                        .onTapGesture {
+                            showRateView = false
+                        }
+                    RateView(showRateView: $showRateView)
+                        .transition(.opacity)
+                        .animation(.easeInOut, value: showRateView)
+                }
             }
         }
-        .edgesIgnoringSafeArea(.bottom)
     }
     
     private func checkSettingsChange() {
@@ -143,6 +170,10 @@ struct HomeView: View {
     }
 }
 
-#Preview {
-    HomeView()
+#Preview("Normal") {
+    HomeView(launchCount: 1)
+}
+
+#Preview("Rate View") {
+    HomeView(launchCount: 2)
 }
