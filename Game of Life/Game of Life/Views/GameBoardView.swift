@@ -45,7 +45,8 @@ struct GameBoardView: View {
         let touchY = value.location.y
         
         // only factor in the initialOffset if the board is zoomed out enough to have offset spacing
-        let gridX = totalCellWidth > UIScreen.main.bounds.width ? touchX - offset.width : touchX - offset.width - initialOffset.width
+        //let gridX = totalCellWidth > UIScreen.main.bounds.width ? touchX - offset.width : touchX - offset.width - initialOffset.width
+        let gridX = touchX - offset.width
         // y coordinate is from top of view (does not have access to full height) so no need for initial offset
         let gridY = touchY - offset.height
         

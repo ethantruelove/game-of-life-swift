@@ -13,6 +13,8 @@
 			<string>Developer Name</string>
 			<key>Key</key>
 			<string>Developer Name</string>
+			<key>DefaultValue</key>
+			<string>Ethan Truelove</string>
 		</dict>
 		<dict>
 			<key>Type</key>
