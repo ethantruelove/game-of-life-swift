@@ -10,27 +10,61 @@ import Combine
 
 struct MenuView: View {
     @Binding var offset: CGSize
+    @Binding var lastOffset: CGSize
+    @Binding var scale: CGFloat
+    @Binding var lastScale: CGFloat
+    @Binding var cellSize: CGFloat
+    @Binding var baseCellSize: CGFloat
     @Binding var board: Board
     @Binding var timer: Publishers.Autoconnect<Timer.TimerPublisher>
     @Binding var tickTime: Double
+    
+    @Binding var boardViewWidth: CGFloat
+    @Binding var boardViewHeight: CGFloat
+    
+    @State private var showBoardSizePopover = false
+    @State private var newWidth = ""
+    @State private var newHeight = ""
     
     var body: some View {
         HStack {
             Spacer()
             
+            // attribution: https://www.swiftyplace.com/blog/swiftui-popovers-and-popups
+            Button(action: {
+                newWidth = "\(board.width)"
+                newHeight = "\(board.height)"
+                showBoardSizePopover = true
+            }) {
+                Image(systemName: "squareshape.split.3x3")
+            }
+            .popover(isPresented: $showBoardSizePopover) {
+                BoardSizePopoverView(
+                    board: $board,
+                    offset: $offset,
+                    lastOffset: $lastOffset,
+                    scale: $scale,
+                    lastScale: $lastScale,
+                    cellSize: $cellSize,
+                    baseCellSize: $baseCellSize,
+                    boardViewWidth: $boardViewWidth,
+                    boardViewHeight: $boardViewHeight,
+                    showPopover: $showBoardSizePopover,
+                    newWidth: $newWidth,
+                    newHeight: $newHeight
+                )
+                .presentationCompactAdaptation(.popover)
+            }
+            
+            Spacer()
             Button(action: {
                 offset = .zero
+                lastOffset = .zero
+                scale = 1
+                lastScale = 1
+                cellSize = baseCellSize
             }) {
-                ZStack {
-                    Image(systemName: "arrow.left.to.line")
-                        .padding(.trailing)
-                    Image(systemName: "arrow.right.to.line")
-                        .padding(.leading)
-                    Image(systemName: "arrow.up.to.line")
-                        .padding(.bottom)
-                    Image(systemName: "arrow.down.to.line")
-                        .padding(.top)
-                }
+                Image(systemName: "dot.scope")
             }
             Spacer()
             Button(action: {
@@ -78,9 +112,17 @@ struct MenuView: View {
 #Preview {
     struct Preview: View {
         @State private var offset: CGSize = .zero
+        @State private var lastOffset: CGSize = .zero
+        @State private var scale: CGFloat = 1
+        @State private var lastScale: CGFloat = 1
+        @State private var cellSize: CGFloat = 5
+        @State private var baseCellSize: CGFloat = 5
         @State private var board: Board = Board(width: 15, height: 25)
         @State private var timer: Publishers.Autoconnect<Timer.TimerPublisher> = Timer.publish(every: 1000000, on: .main, in: .common).autoconnect()
         @State private var tickTime: Double = 0.1
+        
+        @State private var boardViewWidth: CGFloat = 400
+        @State private var boardViewHeight: CGFloat = 600
         
         init() {
             board.randomize()
@@ -89,9 +131,16 @@ struct MenuView: View {
         var body: some View {
             MenuView(
                 offset: $offset,
+                lastOffset: $lastOffset,
+                scale: $scale,
+                lastScale: $lastScale,
+                cellSize: $cellSize,
+                baseCellSize: $baseCellSize,
                 board: $board,
                 timer: $timer,
-                tickTime: $tickTime
+                tickTime: $tickTime,
+                boardViewWidth: $boardViewWidth,
+                boardViewHeight: $boardViewHeight
             )
         }
     }

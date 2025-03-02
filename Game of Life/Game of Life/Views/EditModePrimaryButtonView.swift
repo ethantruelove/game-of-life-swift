@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct SettingsPrimaryButtonView: View {
+struct EditModePrimaryButtonView: View {
     @Binding var showSettings: Bool
     var editMode: EditMode
     
@@ -24,7 +24,7 @@ struct SettingsPrimaryButtonView: View {
                 .frame(width: 20, height: 20)
                 .scaledToFit()
                 .padding()
-                .background(Circle().fill(Color.gray.opacity(0.2)))
+                .background(Circle().fill(showSettings ? Color.gray : Color.gray.opacity(0.2)))
         }
     }
 }
@@ -36,7 +36,7 @@ struct SettingsPrimaryButtonView: View {
         let editMode: EditMode = .none
         
         var body: some View {
-            SettingsPrimaryButtonView(showSettings: $showSettings, editMode: editMode)
+            EditModePrimaryButtonView(showSettings: $showSettings, editMode: editMode)
         }
     }
     

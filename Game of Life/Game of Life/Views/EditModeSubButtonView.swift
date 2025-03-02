@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct SettingsSubButtonView: View {
+struct EditModeSubButtonView: View {
     let icon: String
     let action: () -> Void
     
@@ -27,7 +27,7 @@ struct SettingsSubButtonView: View {
     struct Preview: View {
         @State var editMode: EditMode = .none
         var body: some View {
-            SettingsSubButtonView(icon: editMode.iconName) {
+            EditModeSubButtonView(icon: editMode.iconName) {
                 editMode = .fill
             }
         }

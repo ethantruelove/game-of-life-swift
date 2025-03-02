@@ -13,30 +13,46 @@ struct GameBoardView: View {
     @Binding var editMode: EditMode
     @Binding var initialOffset: CGSize
     @Binding var offset: CGSize
+    @Binding var lastOffset: CGSize
+    @Binding var scale: CGFloat
+    @Binding var lastScale: CGFloat
     let baseCellSize: CGFloat
     
-    @State private var lastScale: CGFloat = 1
-    @State private var scale: CGFloat = 1
-    @State private var lastOffset = CGSize.zero
-    
     var body: some View {
-        LazyVGrid(columns: Array(repeating: GridItem(.fixed(cellSize), spacing: 0), count: board.width), spacing: 0) {
-            ForEach(0..<board.width * board.height, id: \.self) { index in
-                let x = index % board.width
-                let y = index / board.width
-                
-                Rectangle()
-                    .fill(board.getCell(x: x, y: y) ? Color("alive") : Color("dead"))
-                    .frame(width: cellSize, height: cellSize)
-                    .border(Color.gray, width: 0.5)
+        // idea to switch to Canvas for representation
+        // atttribution: https://swdevnotes.com/swift/2022/better-performance-with-canvas-in-swiftui/
+        // attribution: https://swdevnotes.com/swift/2023/conways-game-of-life-with-swiftui/
+        Canvas { context, size in
+            let backgroundRect = CGRect(origin: .zero, size: size)
+            context.fill(
+                Path(backgroundRect),
+                with: .color(Color(red: 0.95, green: 0.95, blue: 0.95))
+            )
+            
+            
+            for row in 0..<board.height {
+                for col in 0..<board.width {
+                    if board.getCell(x: col, y: row) {
+                        let rect = CGRect(
+                            x: CGFloat(col) * cellSize,
+                            y: CGFloat(row) * cellSize,
+                            width: cellSize,
+                            height: cellSize
+                        )
+                        
+                        context.fill(
+                            Path(rect),
+                            with: .color(Color("alive"))
+                        )
+                    }
+                }
             }
         }
-        //.frame(width: CGFloat(board.width) * cellSize, height: CGFloat(board.height) * cellSize)
+        .frame(width: CGFloat(board.width) * cellSize, height: CGFloat(board.height) * cellSize)
         .offset(offset)
         .onAppear() {
             scale = cellSize / baseCellSize
         }
-        // single finger drag dependent on edit mode
         .gesture(zoomGesture
             .simultaneously(with: singleFingerDragGesture)
         )
@@ -79,9 +95,9 @@ struct GameBoardView: View {
     }
     
     private func handlePanGesture(_ value: DragGesture.Value) {
-        print("handling pan old offset width \(offset.width) height \(offset.height)")
-        print("translation width \(value.translation.width) height \(value.translation.height)")
-        print("last offset width \(lastOffset.width) height \(lastOffset.height)")
+//        print("handling pan old offset width \(offset.width) height \(offset.height)")
+//        print("translation width \(value.translation.width) height \(value.translation.height)")
+//        print("last offset width \(lastOffset.width) height \(lastOffset.height)")
         offset = CGSize(
             width: lastOffset.width + value.translation.width,
             height: lastOffset.height + value.translation.height
@@ -115,6 +131,7 @@ struct GameBoardView: View {
                 //print(boundaryScale)
                 //scale = min(max(newScale, boundaryScale), 10)
                 scale = min(max(newScale, 0.1), 10)
+                print("New Scale \(scale) last scale \(lastScale)")
                 let oldCellSize = cellSize
                 cellSize = baseCellSize * scale
                 updateInitialOffsetForZoom(oldCellSize: oldCellSize, newCellSize: cellSize)
@@ -142,11 +159,13 @@ struct GameBoardView: View {
             height: initialOffset.height == 0 ? 0 : initialOffset.height - (heightDifference / 2)
         )
         
-        print("Zoom update - Old size: \(oldCellSize), New size: \(newCellSize)")
-        print("New initialOffset: \(initialOffset)")
+//        print("Zoom update - Old size: \(oldCellSize), New size: \(newCellSize)")
+//        print("New initialOffset: \(initialOffset)")
     }
 }
 
+// reminder for Binding previews
+// attribution: https://www.reddit.com/r/SwiftUI/comments/17aruvw/preview_with_binding_properties/
 #Preview {
     struct Preview: View {
         @State private var board: Board = Board(width: 15, height: 25)
@@ -154,6 +173,8 @@ struct GameBoardView: View {
         @State private var editMode: EditMode = .none
         @State private var initialOffset: CGSize = .zero
         @State private var offset: CGSize = .zero
+        @State private var lastOffset: CGSize = .zero
+        @State private var scale: CGFloat = 1
         @State private var lastScale: CGFloat = 1
         let baseCellSize: CGFloat = 25
         
@@ -168,6 +189,9 @@ struct GameBoardView: View {
                 editMode: $editMode,
                 initialOffset: $initialOffset,
                 offset: $offset,
+                lastOffset: $lastOffset,
+                scale: $scale,
+                lastScale: $lastScale,
                 baseCellSize: baseCellSize
             )
         }
