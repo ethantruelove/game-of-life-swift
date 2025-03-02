@@ -12,14 +12,14 @@ import SwiftUI
 class Board {
     let width: Int
     let height: Int
-    var grid: [Bool]
     var autoplay: Bool
     private var lastToggledIndex: Int = -1
+    var cells: Set<Int>
     
     init(width: Int, height: Int) {
         self.width = width
         self.height = height
-        self.grid = Array(repeating: false, count: width * height)
+        self.cells = Set<Int>()
         self.autoplay = false
     }
     
@@ -28,63 +28,99 @@ class Board {
         return y * width + x
     }
     
+    private func coordinates(from index: Int) -> (x: Int, y: Int) {
+        return (index % width, index / width)
+    }
+    
     func setCell(x: Int, y: Int, state: Bool) {
-        let ind = index(x: x, y: y)
-        guard ind >= 0 else { return }
-        grid[ind] = state
+        setCell(idx: index(x: x, y: y), state: state)
+    }
+    
+    func setCell(idx: Int, state: Bool) {
+        guard idx >= 0 else { return }
+        if state {
+            cells.insert(idx)
+        } else {
+            cells.remove(idx)
+        }
     }
     
     func getCell(x: Int, y: Int) -> Bool {
-        let ind = index(x: x, y: y)
-        guard ind >= 0 else { return false }
-        return grid[ind]
+        getCell(idx: index(x: x, y: y))
+    }
+    
+    func getCell(idx: Int) -> Bool {
+        guard idx >= 0 else { return false }
+        return cells.contains(idx)
     }
     
     func toggleCell(x: Int, y: Int) {
         let toggleIndex = index(x: x, y: y)
         if toggleIndex != lastToggledIndex {
-            grid[toggleIndex].toggle()
+            setCell(idx: toggleIndex, state: !getCell(idx: toggleIndex))
             lastToggledIndex = toggleIndex
         }
     }
     
     func tick() {
-        var nextGrid = grid
-        for x in 0..<width {
-            for y in 0..<height {
-                let state = getCell(x: x, y: y)
-                let neighbors = aliveNeighborCount(x: x, y: y)
-                nextGrid[index(x: x, y: y)] = (state && (neighbors == 2 || neighbors == 3)) || (!state && neighbors == 3)
+        var cellsToCheck = Set<Int>()
+        
+        for cellIdx in cells {
+            let (x, y) = coordinates(from: cellIdx)
+            cellsToCheck.insert(cellIdx)
+            
+            for dx in -1...1 {
+                for dy in -1...1 {
+                    let nX = x + dx
+                    let nY = y + dy
+                    if nX >= 0 && nX < width && nY >= 0 && nY < height {
+                        cellsToCheck.insert(index(x: nX, y: nY))
+                    }
+                }
             }
         }
         
-        grid = nextGrid
+        var nextGen = Set<Int>()
+        
+        for cellIdx in cellsToCheck {
+            let (x, y) = coordinates(from: cellIdx)
+            let isAlive = cells.contains(cellIdx)
+            let nCount = aliveNeighborCount(x: x, y: y)
+            
+            if isAlive && (nCount == 2 || nCount == 3) {
+                nextGen.insert(cellIdx)
+            } else if !isAlive && nCount == 3 {
+                nextGen.insert(cellIdx)
+            }
+        }
+        
+        cells = nextGen
     }
     
     private func aliveNeighborCount(x: Int, y: Int) -> Int {
         let radius = -1...1
         
         // generate all pairs in radius and reduce state
-        let count = radius.flatMap {
+        return radius.flatMap {
             dx in radius.map { dy in (dx, dy) }
         }
-        .map { getCell(x: x + $0.0, y: y + $0.1) ? 1 : 0 }
-        .reduce(0, +)
-        
-        // we do not want to count ourself if it happens to be alive
-        // introduces some extra check but prevents filtering the whole list for the one known element
-        if getCell(x: x, y: y) {
-            return count - 1
+        .filter { $0 != (0,0) }
+        .map {
+            let nIdx = index(x: x + $0.0, y: y + $0.1)
+            if nIdx >= 0 && cells.contains(nIdx) {
+                return 1
+            } else {
+                return 0
+            }
         }
-
-        return count
+        .reduce(0, +)
     }
     
     func randomize() {
-        var newGrid = grid
-        for i in 0..<grid.count {
-            newGrid[i] = Bool.random()
+        cells.removeAll()
+        let total = width * height
+        while cells.count < total / 4 {
+            cells.insert(Int.random(in: 0..<total))
         }
-        grid = newGrid
     }
 }

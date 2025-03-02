@@ -9,7 +9,7 @@ import SwiftUI
 import Combine
 
 struct HomeView: View {
-    @State private var board = Board(width: 5, height: 5)
+    @State private var board = Board(width: 100, height: 300)
     @State private var tickTime: Double = 0.1
     // start at high number to prevent wasted checking whenever autoplay is off
     @State private var timer: Publishers.Autoconnect<Timer.TimerPublisher> = Timer.publish(every: 1000000, on: .main, in: .common).autoconnect()

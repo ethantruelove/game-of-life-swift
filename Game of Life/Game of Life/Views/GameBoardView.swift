@@ -30,21 +30,22 @@ struct GameBoardView: View {
             )
             
             
-            for row in 0..<board.height {
-                for col in 0..<board.width {
-                    if board.getCell(x: col, y: row) {
-                        let rect = CGRect(
-                            x: CGFloat(col) * cellSize,
-                            y: CGFloat(row) * cellSize,
-                            width: cellSize,
-                            height: cellSize
-                        )
-                        
-                        context.fill(
-                            Path(rect),
-                            with: .color(Color("alive"))
-                        )
-                    }
+            for idx in board.cells {
+                let col = idx % board.width
+                let row = idx / board.width
+                
+                if board.getCell(x: col, y: row) {
+                    let rect = CGRect(
+                        x: CGFloat(col) * cellSize,
+                        y: CGFloat(row) * cellSize,
+                        width: cellSize,
+                        height: cellSize
+                    )
+                    
+                    context.fill(
+                        Path(rect),
+                        with: .color(Color("alive"))
+                    )
                 }
             }
         }
