@@ -63,6 +63,7 @@ struct BoardSizePopoverView: View {
                     if let width = Int(newWidth), let height = Int(newHeight) {
                         if width >= 1 && width <= 10000 && height >= 1 && height <= 10000 {
                             board = Board(width: width, height: height)
+                            board.randomize()
                             offset = .zero
                             lastOffset = .zero
                             
@@ -72,6 +73,9 @@ struct BoardSizePopoverView: View {
                             
                             scale = 1
                             lastScale = 1
+                            
+                            Settings.shared.setBoardWidth(width)
+                            Settings.shared.setBoardHeight(height)
                             
                             showPopover = false
                         } else {

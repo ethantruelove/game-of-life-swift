@@ -9,6 +9,10 @@ import SwiftUI
 
 @main
 struct Game_of_LifeApp: App {
+    init() {
+        Settings.shared.loadDefaults()
+    }
+    
     var body: some Scene {
         WindowGroup {
             HomeView()

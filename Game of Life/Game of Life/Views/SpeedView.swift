@@ -20,6 +20,7 @@ struct SpeedView: View {
                 onEditingChanged: { editing in
                     if !editing {
                         onTickChange()
+                        Settings.shared.setTickTime(tickTime)
                     }
             })
             Text("\(String(format: "%g", pow(10, tickTime))) (gen/s)")

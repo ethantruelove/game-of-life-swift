@@ -29,9 +29,14 @@ struct HomeView: View {
     @State private var boardViewHeight: CGFloat = 0
     
     init() {
-        let board = Board(width: 30, height: 50)
+        let sWidth = Settings.shared.boardWidth
+        let sHeight = Settings.shared.boardHeight
+        let sTickTime = Settings.shared.tickTime
+        
+        let board = Board(width: sWidth, height: sHeight)
         board.randomize()
         _board = State(initialValue: board)
+        _tickTime = State(initialValue: sTickTime)
     }
     
     var body: some View {
@@ -107,6 +112,34 @@ struct HomeView: View {
             }
         }
         .edgesIgnoringSafeArea(.bottom)
+    }
+    
+    private func checkSettingsChange() {
+        let sWidth = Settings.shared.boardWidth
+        let sHeight = Settings.shared.boardHeight
+        let sTickTime = Settings.shared.tickTime
+        
+        if board.width != sWidth || board.height != sHeight {
+            board = Board(width: sWidth, height: sHeight)
+            board.randomize()
+            
+            offset = .zero
+            lastOffset = .zero
+            scale = 1
+            lastScale = 1
+            
+            baseCellSize = min(boardViewWidth / CGFloat(board.width), boardViewHeight / CGFloat(board.height))
+            cellSize = baseCellSize
+        }
+        
+        if tickTime != sTickTime {
+            tickTime = sTickTime
+            
+            if board.autoplay {
+                timer.upstream.connect().cancel()
+                timer = Timer.publish(every: pow(10, -tickTime), on: .main, in: .common).autoconnect()
+            }
+        }
     }
 }
 
