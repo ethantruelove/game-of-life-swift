@@ -31,6 +31,8 @@ struct HomeView: View {
     @State private var boardViewWidth: CGFloat = 0
     @State private var boardViewHeight: CGFloat = 0
     
+    @Environment(\.scenePhase) private var scenePhase: ScenePhase
+    
     init(launchCount: Int) {
         self.launchCount = launchCount
         
@@ -136,6 +138,19 @@ struct HomeView: View {
                     RateView(showRateView: $showRateView)
                         .transition(.opacity)
                         .animation(.easeInOut, value: showRateView)
+                }
+            }
+        }
+        .onChange(of: scenePhase) { old, new in
+            if old == .active {
+                if board.autoplay {
+                    timer.upstream.connect().cancel()
+                }
+            }
+            
+            if new == .active {
+                if board.autoplay {
+                    timer = Timer.publish(every: pow(10, -tickTime), on: .main, in: .common).autoconnect()
                 }
             }
         }

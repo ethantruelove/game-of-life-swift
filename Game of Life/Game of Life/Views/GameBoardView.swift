@@ -22,34 +22,10 @@ struct GameBoardView: View {
         // idea to switch to Canvas for representation
         // atttribution: https://swdevnotes.com/swift/2022/better-performance-with-canvas-in-swiftui/
         // attribution: https://swdevnotes.com/swift/2023/conways-game-of-life-with-swiftui/
-        Canvas { context, size in
-            let backgroundRect = CGRect(origin: .zero, size: size)
-            context.fill(
-                Path(backgroundRect),
-                with: .color(Color("background"))
-            )
-            
-            
-            for idx in board.cells {
-                let col = idx % board.width
-                let row = idx / board.width
-                
-                if board.getCell(x: col, y: row) {
-                    let rect = CGRect(
-                        x: CGFloat(col) * cellSize,
-                        y: CGFloat(row) * cellSize,
-                        width: cellSize,
-                        height: cellSize
-                    )
-                    
-                    context.fill(
-                        Path(rect),
-                        with: .color(Color("alive"))
-                    )
-                }
-            }
-        }
-        .frame(width: CGFloat(board.width) * cellSize, height: CGFloat(board.height) * cellSize)
+        SimpleBoardView(
+            board: board,
+            cellSize: cellSize
+        )
         .offset(offset)
         .onAppear() {
             scale = cellSize / baseCellSize
