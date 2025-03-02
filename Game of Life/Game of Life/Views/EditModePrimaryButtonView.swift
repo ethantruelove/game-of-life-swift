@@ -8,23 +8,24 @@
 import SwiftUI
 
 struct EditModePrimaryButtonView: View {
-    @Binding var showSettings: Bool
+    @Binding var showEditModes: Bool
     var editMode: EditMode
     
     var body: some View {
         Button(action: {
             withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-                showSettings.toggle()
+                showEditModes.toggle()
             }
         }) {
             Image(systemName: editMode.iconName)
                 .font(.system(size: 25))
-                .foregroundColor(showSettings ? .blue : .gray)
-                .rotationEffect(Angle(degrees: showSettings ? 360 : 0))
+                .foregroundColor(showEditModes ? .blue : .gray)
+                .shadow(color: .white, radius: 3)
+                .rotationEffect(Angle(degrees: showEditModes ? 360 : 0))
                 .frame(width: 20, height: 20)
                 .scaledToFit()
                 .padding()
-                .background(Circle().fill(showSettings ? Color.gray : Color.gray.opacity(0.2)))
+                .background(Circle().fill(showEditModes ? Color.gray : Color.gray.opacity(0.5)))
         }
     }
 }
@@ -32,11 +33,24 @@ struct EditModePrimaryButtonView: View {
 
 #Preview {
     struct Preview: View {
-        @State private var showSettings: Bool = true
+        @State private var showEditModes: Bool = false
         let editMode: EditMode = .none
         
         var body: some View {
-            EditModePrimaryButtonView(showSettings: $showSettings, editMode: editMode)
+            ZStack {
+                HStack(spacing: 0) {
+                    Rectangle()
+                        .fill(Color("background"))
+                        .frame(width: 35, height: 70)
+                    Rectangle().fill(Color("alive"))
+                        .frame(width: 35, height: 70)
+                }
+                
+                EditModePrimaryButtonView(
+                    showEditModes: $showEditModes,
+                    editMode: editMode
+                )
+            }
         }
     }
     

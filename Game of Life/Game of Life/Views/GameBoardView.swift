@@ -26,7 +26,7 @@ struct GameBoardView: View {
             let backgroundRect = CGRect(origin: .zero, size: size)
             context.fill(
                 Path(backgroundRect),
-                with: .color(Color(red: 0.95, green: 0.95, blue: 0.95))
+                with: .color(Color("background"))
             )
             
             

@@ -8,17 +8,17 @@
 import SwiftUI
 
 struct EditModeView: View {
-    @Binding var showSettings: Bool
+    @Binding var showEditModes: Bool
     @Binding var editMode: EditMode
     
     var body: some View {
         ZStack {
             EditModePrimaryButtonView(
-                showSettings: $showSettings,
+                showEditModes: $showEditModes,
                 editMode: editMode
             )
             
-            if showSettings {
+            if showEditModes {
                 VStack(spacing: 10) {
                     ForEach(EditMode.allCases, id: \.self) { mode in
                         if mode != editMode{
@@ -41,11 +41,11 @@ struct EditModeView: View {
 
 #Preview {
     struct Preview: View {
-        @State var showSettings: Bool = false
+        @State var showEditModes: Bool = false
         @State var editMode: EditMode = .none
         var body: some View {
             EditModeView(
-                showSettings: $showSettings,
+                showEditModes: $showEditModes,
                 editMode: $editMode
             )
         }

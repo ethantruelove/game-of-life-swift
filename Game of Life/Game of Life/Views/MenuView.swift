@@ -26,71 +26,93 @@ struct MenuView: View {
     @State private var newWidth = ""
     @State private var newHeight = ""
     
+    @State private var showSpeedView = false
+    
     var body: some View {
-        HStack {
-            Spacer()
-            
-            // attribution: https://www.swiftyplace.com/blog/swiftui-popovers-and-popups
-            Button(action: {
-                newWidth = "\(board.width)"
-                newHeight = "\(board.height)"
-                showBoardSizePopover = true
-            }) {
-                Image(systemName: "squareshape.split.3x3")
-            }
-            .popover(isPresented: $showBoardSizePopover) {
-                BoardSizePopoverView(
-                    board: $board,
-                    offset: $offset,
-                    lastOffset: $lastOffset,
-                    scale: $scale,
-                    lastScale: $lastScale,
-                    cellSize: $cellSize,
-                    baseCellSize: $baseCellSize,
-                    boardViewWidth: $boardViewWidth,
-                    boardViewHeight: $boardViewHeight,
-                    showPopover: $showBoardSizePopover,
-                    newWidth: $newWidth,
-                    newHeight: $newHeight
+        VStack {
+            if showSpeedView {
+                SpeedView(
+                    tickTime: $tickTime,
+                    onTickChange: {
+                        if board.autoplay {
+                            restartAutoplay()
+                        }
+                    }
                 )
-                .presentationCompactAdaptation(.popover)
             }
             
-            Spacer()
-            Button(action: {
-                offset = .zero
-                lastOffset = .zero
-                scale = 1
-                lastScale = 1
-                cellSize = baseCellSize
-            }) {
-                Image(systemName: "dot.scope")
-            }
-            Spacer()
-            Button(action: {
-                board.randomize()
-            }) {
-                Image(systemName: "dice.fill")
-            }
-            Spacer()
-            Button(action: {
-                board.tick()
-            }) {
-                Image(systemName: "arrow.forward")
-            }
-            Spacer()
-            Button(action: {
-                board.autoplay.toggle()
+            HStack {
+                Spacer()
                 
-                // stop no matter what in case user hits too quickly
-                stopAutoplay()
-                if board.autoplay {
-                    startAutoplay()
+                // attribution: https://www.swiftyplace.com/blog/swiftui-popovers-and-popups
+                Button(action: {
+                    newWidth = "\(board.width)"
+                    newHeight = "\(board.height)"
+                    showBoardSizePopover.toggle()
+                }) {
+                    Image(systemName: "squareshape.split.3x3")
                 }
-            }) {
-                Image(systemName: board.autoplay ? "pause.fill" : "play.fill")
+                .popover(isPresented: $showBoardSizePopover) {
+                    BoardSizePopoverView(
+                        board: $board,
+                        offset: $offset,
+                        lastOffset: $lastOffset,
+                        scale: $scale,
+                        lastScale: $lastScale,
+                        cellSize: $cellSize,
+                        baseCellSize: $baseCellSize,
+                        boardViewWidth: $boardViewWidth,
+                        boardViewHeight: $boardViewHeight,
+                        showPopover: $showBoardSizePopover,
+                        newWidth: $newWidth,
+                        newHeight: $newHeight
+                    )
+                    .presentationCompactAdaptation(.popover)
+                }
+                Spacer()
+                
+                Button(action: {
+                    showSpeedView.toggle()
+                }) {
+                    Image(systemName: "hare.fill")
+                }
+                
+                Spacer()
+                Button(action: {
+                    offset = .zero
+                    lastOffset = .zero
+                    scale = 1
+                    lastScale = 1
+                    cellSize = baseCellSize
+                }) {
+                    Image(systemName: "dot.scope")
+                }
+                Spacer()
+                Button(action: {
+                    board.randomize()
+                }) {
+                    Image(systemName: "dice.fill")
+                }
+                Spacer()
+                Button(action: {
+                    board.tick()
+                }) {
+                    Image(systemName: "arrow.forward")
+                }
+                Spacer()
+                Button(action: {
+                    board.autoplay.toggle()
+                    
+                    // stop no matter what in case user hits too quickly
+                    stopAutoplay()
+                    if board.autoplay {
+                        startAutoplay()
+                    }
+                }) {
+                    Image(systemName: board.autoplay ? "pause.fill" : "play.fill")
+                }
+                Spacer()
             }
-            Spacer()
         }
         .padding(.vertical)
         .background(
@@ -101,11 +123,16 @@ struct MenuView: View {
     
     // attribution: https://www.hackingwithswift.com/books/ios-swiftui/triggering-events-repeatedly-using-a-timer
     func startAutoplay() {
-        timer = Timer.publish(every: tickTime, on: .main, in: .common).autoconnect()
+        timer = Timer.publish(every: pow(10, -tickTime), on: .main, in: .common).autoconnect()
     }
     
     func stopAutoplay() {
         timer.upstream.connect().cancel()
+    }
+    
+    func restartAutoplay() {
+        stopAutoplay()
+        startAutoplay()
     }
 }
 

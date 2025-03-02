@@ -9,8 +9,8 @@ import SwiftUI
 import Combine
 
 struct HomeView: View {
-    @State private var board = Board(width: 100, height: 300)
-    @State private var tickTime: Double = 0.1
+    @State private var board: Board
+    @State private var tickTime: Double = 0
     // start at high number to prevent wasted checking whenever autoplay is off
     @State private var timer: Publishers.Autoconnect<Timer.TimerPublisher> = Timer.publish(every: 1000000, on: .main, in: .common).autoconnect()
     @State private var editMode: EditMode = .none
@@ -28,6 +28,12 @@ struct HomeView: View {
     @State private var boardViewWidth: CGFloat = 0
     @State private var boardViewHeight: CGFloat = 0
     
+    init() {
+        let board = Board(width: 30, height: 50)
+        board.randomize()
+        _board = State(initialValue: board)
+    }
+    
     var body: some View {
         // attribution: https://stackoverflow.com/questions/60021403/how-to-get-height-and-width-of-view-or-screen-in-swiftui
         // attribution: https://developer.apple.com/documentation/swiftui/geometryreader
@@ -44,7 +50,7 @@ struct HomeView: View {
                     lastScale: $lastScale,
                     baseCellSize: baseCellSize)
                 .frame(width: geometry.size.width, height: geometry.size.height)
-                //.clipped()
+                .clipped()
                 .onAppear() {
                     // TODO: see if this is still needed after switching to Canvas
                     let screenWidth = geometry.size.width
@@ -74,7 +80,7 @@ struct HomeView: View {
                     HStack {
                         Spacer()
                         EditModeView(
-                            showSettings: $showSettings,
+                            showEditModes: $showSettings,
                             editMode: $editMode
                         )
                         .padding(.trailing)
