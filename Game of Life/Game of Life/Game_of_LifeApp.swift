@@ -14,11 +14,17 @@ struct Game_of_LifeApp: App {
     @Environment(\.scenePhase) private var scenePhase: ScenePhase
     @State private var completedLaunch: Bool = false
     
+    private var gameManager = GameManager()
+    private var boardViewModel = BoardViewModel()
+    
     var body: some Scene {
         WindowGroup {
             ZStack {
                 if !showSplashScreen {
+                    // attribution: https://stackoverflow.com/questions/76958093/how-to-bind-environment-variable-ios17
                     HomeView(launchCount: launchCount)
+                        .environment(gameManager)
+                        .environment(boardViewModel)
                 } else {
                     SplashScreenView()
                         .onTapGesture {

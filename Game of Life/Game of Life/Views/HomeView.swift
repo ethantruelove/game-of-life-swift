@@ -11,26 +11,11 @@ import Combine
 struct HomeView: View {
     private let launchCount: Int
     @State private var showRateView: Bool
-    
-    @State private var board: Board
-    @State private var tickTime: Double = 0
-    // start at high number to prevent wasted checking whenever autoplay is off
-    @State private var timer: Publishers.Autoconnect<Timer.TimerPublisher> = Timer.publish(every: 1000000, on: .main, in: .common).autoconnect()
-    @State private var editMode: EditMode = .none
-    @State private var cellSize: CGFloat = 5
-    @State private var initialOffset: CGSize = .zero
-    @State private var offset: CGSize = .zero
-    @State private var lastOffset: CGSize = .zero
+
+    @Environment(GameManager.self) private var gameManager
+    @Environment(BoardViewModel.self) private var boardViewModel
     
     @State private var showSettings = false
-    
-    @State private var scale: CGFloat = 1
-    @State private var lastScale: CGFloat = 1
-    
-    @State private var baseCellSize: CGFloat = 5
-    @State private var boardViewWidth: CGFloat = 0
-    @State private var boardViewHeight: CGFloat = 0
-    
     @Environment(\.scenePhase) private var scenePhase: ScenePhase
     
     init(launchCount: Int) {
@@ -38,19 +23,19 @@ struct HomeView: View {
         
         if launchCount == 2 {
             self.showRateView = true
-        }
-        else {
+        } else {
             self.showRateView = false
         }
         
+        // Initialize our state objects
         let sWidth = Settings.shared.boardWidth
         let sHeight = Settings.shared.boardHeight
         let sTickTime = Settings.shared.tickTime
         
-        let board = Board(width: sWidth, height: sHeight)
-        board.randomize()
-        _board = State(initialValue: board)
-        _tickTime = State(initialValue: sTickTime)
+        let gameManager = GameManager(width: sWidth, height: sHeight, tickTime: sTickTime)
+        gameManager.board.randomize()
+        
+        let boardViewModel = BoardViewModel()
     }
     
     var body: some View {
@@ -60,39 +45,34 @@ struct HomeView: View {
             GeometryReader { geometry in
                 ZStack(alignment: .bottom) {
                     GameBoardView(
-                        board: $board,
-                        cellSize: $cellSize,
-                        editMode: $editMode,
-                        initialOffset: $initialOffset,
-                        offset: $offset,
-                        lastOffset: $lastOffset,
-                        scale: $scale,
-                        lastScale: $lastScale,
-                        baseCellSize: baseCellSize)
+                        gameManager: _gameManager,
+                        boardViewModel: _boardViewModel
+                    )
                     .frame(width: geometry.size.width, height: geometry.size.height)
                     .clipped()
                     .onAppear() {
-                        // TODO: see if this is still needed after switching to Canvas
+                        // Initialize the board view dimensions
                         let screenWidth = geometry.size.width
                         let screenHeight = geometry.size.height * 0.75
-                        let gridWidth = CGFloat(board.width) * cellSize
-                        let gridheight = CGFloat(board.height) * cellSize
+                        let gridWidth = CGFloat(gameManager.board.width) * boardViewModel.cellSize
+                        let gridheight = CGFloat(gameManager.board.height) * boardViewModel.cellSize
                         
-                        initialOffset = CGSize(width: max(0, (screenWidth - gridWidth) / 2), height: max(0, (screenHeight - gridheight) / 2))
-                        print("Setting initial offset to: \(initialOffset)")
+                        boardViewModel.initialOffset = CGSize(
+                            width: max(0, (screenWidth - gridWidth) / 2),
+                            height: max(0, (screenHeight - gridheight) / 2)
+                        )
                         
-                        let minWidth = geometry.size.width / CGFloat(board.width)
-                        let minHeight = geometry.size.height / CGFloat(board.height)
-                        baseCellSize = min(minWidth, minHeight)
-                        cellSize = baseCellSize
+                        let minWidth = geometry.size.width / CGFloat(gameManager.board.width)
+                        let minHeight = geometry.size.height / CGFloat(gameManager.board.height)
+                        boardViewModel.baseCellSize = min(minWidth, minHeight)
+                        boardViewModel.cellSize = boardViewModel.baseCellSize
                         
-                        boardViewWidth = geometry.size.width
-                        boardViewHeight = geometry.size.height
-                        print("Initial cellSize \(cellSize)")
+                        boardViewModel.boardViewWidth = geometry.size.width
+                        boardViewModel.boardViewHeight = geometry.size.height
                     }
-                    .onReceive(timer) { _ in
-                        if board.autoplay {
-                            board.tick()
+                    .onReceive(gameManager.timer) { _ in
+                        if gameManager.board.autoplay {
+                            gameManager.tick()
                         }
                     }
                     
@@ -101,24 +81,18 @@ struct HomeView: View {
                             Spacer()
                             EditModeView(
                                 showEditModes: $showSettings,
-                                editMode: $editMode
+                                editMode: Binding(
+                                    get: { boardViewModel.editMode },
+                                    set: { boardViewModel.editMode = $0 }
+                                )
                             )
                             .padding(.trailing)
                         }
                         
                         Spacer()
                         MenuView(
-                            offset: $offset,
-                            lastOffset: $lastOffset,
-                            scale: $scale,
-                            lastScale: $lastScale,
-                            cellSize: $cellSize,
-                            baseCellSize: $baseCellSize,
-                            board: $board,
-                            timer: $timer,
-                            tickTime: $tickTime,
-                            boardViewWidth: $boardViewWidth,
-                            boardViewHeight: $boardViewHeight
+                            gameManager: _gameManager,
+                            boardViewModel: _boardViewModel
                         )
                         .background(Color("dead"))
                         .padding(.bottom)
@@ -142,45 +116,7 @@ struct HomeView: View {
             }
         }
         .onChange(of: scenePhase) { old, new in
-            if old == .active {
-                if board.autoplay {
-                    timer.upstream.connect().cancel()
-                }
-            }
-            
-            if new == .active {
-                if board.autoplay {
-                    timer = Timer.publish(every: pow(10, -tickTime), on: .main, in: .common).autoconnect()
-                }
-            }
-        }
-    }
-    
-    private func checkSettingsChange() {
-        let sWidth = Settings.shared.boardWidth
-        let sHeight = Settings.shared.boardHeight
-        let sTickTime = Settings.shared.tickTime
-        
-        if board.width != sWidth || board.height != sHeight {
-            board = Board(width: sWidth, height: sHeight)
-            board.randomize()
-            
-            offset = .zero
-            lastOffset = .zero
-            scale = 1
-            lastScale = 1
-            
-            baseCellSize = min(boardViewWidth / CGFloat(board.width), boardViewHeight / CGFloat(board.height))
-            cellSize = baseCellSize
-        }
-        
-        if tickTime != sTickTime {
-            tickTime = sTickTime
-            
-            if board.autoplay {
-                timer.upstream.connect().cancel()
-                timer = Timer.publish(every: pow(10, -tickTime), on: .main, in: .common).autoconnect()
-            }
+            gameManager.handleScenePhaseChange(old: old, new: new)
         }
     }
 }

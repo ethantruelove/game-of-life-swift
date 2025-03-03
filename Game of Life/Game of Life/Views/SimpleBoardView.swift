@@ -19,6 +19,8 @@ struct SimpleBoardView: View {
     }
     
     var body: some View {
+        // atttribution: https://swdevnotes.com/swift/2022/better-performance-with-canvas-in-swiftui/
+        // attribution: https://swdevnotes.com/swift/2023/conways-game-of-life-with-swiftui/
         Canvas { context, size in
             let backgroundRect = CGRect(origin: .zero, size: size)
             context.fill(
