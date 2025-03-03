@@ -27,15 +27,12 @@ struct HomeView: View {
             self.showRateView = false
         }
         
-        // Initialize our state objects
         let sWidth = Settings.shared.boardWidth
         let sHeight = Settings.shared.boardHeight
         let sTickTime = Settings.shared.tickTime
         
         let gameManager = GameManager(width: sWidth, height: sHeight, tickTime: sTickTime)
         gameManager.board.randomize()
-        
-        let boardViewModel = BoardViewModel()
     }
     
     var body: some View {
@@ -51,7 +48,6 @@ struct HomeView: View {
                     .frame(width: geometry.size.width, height: geometry.size.height)
                     .clipped()
                     .onAppear() {
-                        // Initialize the board view dimensions
                         let screenWidth = geometry.size.width
                         let screenHeight = geometry.size.height * 0.75
                         let gridWidth = CGFloat(gameManager.board.width) * boardViewModel.cellSize
@@ -122,9 +118,19 @@ struct HomeView: View {
 }
 
 #Preview("Normal") {
+    let gameManager = GameManager(width: 80, height: 80)
+    let boardViewModel = BoardViewModel()
+    
     HomeView(launchCount: 1)
+        .environment(gameManager)
+        .environment(boardViewModel)
 }
 
 #Preview("Rate View") {
+    let gameManager = GameManager(width: 40, height: 80)
+    let boardViewModel = BoardViewModel()
+    
     HomeView(launchCount: 2)
+        .environment(gameManager)
+        .environment(boardViewModel)
 }

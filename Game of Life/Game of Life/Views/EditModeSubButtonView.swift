@@ -22,16 +22,10 @@ struct EditModeSubButtonView: View {
     }
 }
 
-
 #Preview {
-    struct Preview: View {
-        @State var editMode: EditMode = .none
-        var body: some View {
-            EditModeSubButtonView(icon: editMode.iconName) {
-                editMode = .fill
-            }
-        }
-    }
+    @Previewable @State var editMode: EditMode = .none
     
-    return Preview()
+    EditModeSubButtonView(icon: editMode.iconName) {
+        editMode = editMode == .none ? .fill : .none
+    }
 }

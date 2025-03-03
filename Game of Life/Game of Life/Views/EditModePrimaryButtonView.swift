@@ -30,29 +30,21 @@ struct EditModePrimaryButtonView: View {
     }
 }
 
-
 #Preview {
-    struct Preview: View {
-        @State private var showEditModes: Bool = false
-        let editMode: EditMode = .none
-        
-        var body: some View {
-            ZStack {
-                HStack(spacing: 0) {
-                    Rectangle()
-                        .fill(Color("background"))
-                        .frame(width: 35, height: 70)
-                    Rectangle().fill(Color("alive"))
-                        .frame(width: 35, height: 70)
-                }
-                
-                EditModePrimaryButtonView(
-                    showEditModes: $showEditModes,
-                    editMode: editMode
-                )
-            }
-        }
-    }
+    @Previewable @State var showEditModes: Bool = false
     
-    return Preview()
+    ZStack {
+        HStack(spacing: 0) {
+            Rectangle()
+                .fill(Color("background"))
+                .frame(width: 35, height: 70)
+            Rectangle().fill(Color("alive"))
+                .frame(width: 35, height: 70)
+        }
+        
+        EditModePrimaryButtonView(
+            showEditModes: $showEditModes,
+            editMode: .none
+        )
+    }
 }

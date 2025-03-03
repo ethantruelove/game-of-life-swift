@@ -57,17 +57,12 @@ struct GameBoardView: View {
 }
 
 #Preview {
-    struct Preview: View {
-        @Environment(GameManager.self) private var gameManager
-        @Environment(BoardViewModel.self) private var boardViewModel
-        
-        var body: some View {
-            GameBoardView(
-                gameManager: _gameManager,
-                boardViewModel: _boardViewModel
-            )
-        }
-    }
-    
-    return Preview()
+    let gameManager = GameManager(width: 30, height: 30)
+    let boardViewModel = BoardViewModel(
+        cellSize: 10
+    )
+
+    GameBoardView()
+        .environment(gameManager)
+        .environment(boardViewModel)
 }

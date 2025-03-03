@@ -47,13 +47,7 @@ struct RateView: View {
 }
 
 #Preview {
-    struct Preview: View {
-        @State private var showRateView: Bool = true
-        
-        var body: some View {
-            RateView(showRateView: $showRateView)
-        }
-    }
+    @Previewable @State var showRateView: Bool = true
     
-    return Preview()
+    RateView(showRateView: $showRateView)
 }

@@ -75,27 +75,18 @@ struct BoardSizePopoverView: View {
 }
 
 #Preview {
-    struct Preview: View {
-        @Environment(GameManager.self) var gameManager
-        @Environment(BoardViewModel.self) var boardViewModel
-        @State var showPopover: Bool = false
-        @State var newWidth: String = "10"
-        @State var newHeight: String = "10"
-        
-        init() {
-            gameManager.board.randomize()
-        }
-        
-        var body: some View {
-            BoardSizePopoverView(
-                gameManager: _gameManager,
-                boardViewModel: _boardViewModel,
-                showPopover: $showPopover,
-                newWidth: $newWidth,
-                newHeight: $newHeight
-            )
-        }
-    }
+    @Previewable @State var newHeight: String = "10"
+    @Previewable @State var newWidth: String = "10"
+    @Previewable @State var showPopover: Bool = false
     
-    return Preview()
+    let gameManager = GameManager()
+    let boardViewModel = BoardViewModel()
+    
+    BoardSizePopoverView(
+        showPopover: $showPopover,
+        newWidth: $newWidth,
+        newHeight: $newHeight
+    )
+    .environment(gameManager)
+    .environment(boardViewModel)
 }

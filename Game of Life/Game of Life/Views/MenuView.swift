@@ -138,21 +138,10 @@ struct MenuView: View {
 }
 
 #Preview {
-    struct Preview: View {
-        @Environment(GameManager.self) private var gameManager
-        @Environment(BoardViewModel.self) private var boardViewModel
-        
-        init() {
-            _gameManager.wrappedValue.board.randomize()
-        }
-        
-        var body: some View {
-            MenuView(
-                gameManager: _gameManager,
-                boardViewModel: _boardViewModel
-            )
-        }
-    }
+    let gameManager = GameManager()
+    let boardViewModel = BoardViewModel()
     
-    return Preview()
+    MenuView()
+        .environment(gameManager)
+        .environment(boardViewModel)
 }

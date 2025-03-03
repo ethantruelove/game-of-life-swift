@@ -33,23 +33,17 @@ struct EditModeView: View {
                 .transition(.offset(y: -50).combined(with: .opacity))
             }
         }
-        // need to put this here so it does not mess up when placed inside of HomeView
-        // and is inside of safe zones
+        // need to put this here so it does not mess up when placed inside of HomeView and is inside of safe zones
         .frame(height: 80)
     }
 }
 
 #Preview {
-    struct Preview: View {
-        @State var showEditModes: Bool = false
-        @State var editMode: EditMode = .none
-        var body: some View {
-            EditModeView(
-                showEditModes: $showEditModes,
-                editMode: $editMode
-            )
-        }
-    }
+    @Previewable @State var showEditModes: Bool = false
+    @Previewable @State var editMode: EditMode = .none
     
-    return Preview()
+    EditModeView(
+        showEditModes: $showEditModes,
+        editMode: $editMode
+    )
 }
