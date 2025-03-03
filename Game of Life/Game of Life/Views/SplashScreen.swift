@@ -103,10 +103,7 @@ struct SplashScreenView: View {
             (19, 17), (20, 17), (21, 17), (22, 17), (23, 17)
         ]
         
-        // Combine all patterns
         let allCells = gamePattern + ofPattern + lifePattern
-        
-        // Set the cells in the board
         for (x, y) in allCells {
             board.setCell(x: x, y: y, state: true)
         }

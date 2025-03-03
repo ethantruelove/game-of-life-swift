@@ -8,15 +8,8 @@
 import SwiftUI
 
 struct BoardSizePopoverView: View {
-    @Binding var board: Board
-    @Binding var offset: CGSize
-    @Binding var lastOffset: CGSize
-    @Binding var scale: CGFloat
-    @Binding var lastScale: CGFloat
-    @Binding var cellSize: CGFloat
-    @Binding var baseCellSize: CGFloat
-    @Binding var boardViewWidth: CGFloat
-    @Binding var boardViewHeight: CGFloat
+    @Environment(GameManager.self) var gameManager
+    @Environment(BoardViewModel.self) var boardViewModel
     
     @Binding var showPopover: Bool
     @Binding var newWidth: String
@@ -61,29 +54,16 @@ struct BoardSizePopoverView: View {
                 
                 Button("Apply") {
                     if let width = Int(newWidth), let height = Int(newHeight) {
-                        if width >= 1 && width <= 10000 && height >= 1 && height <= 10000 {
-                            board = Board(width: width, height: height)
-                            board.randomize()
-                            offset = .zero
-                            lastOffset = .zero
-                            
-                            baseCellSize = min(boardViewWidth / CGFloat(board.width), boardViewHeight / CGFloat(board.height))
-                            cellSize = baseCellSize
-                            print("Resizing cellSize to \(cellSize) with base cell size \(baseCellSize)")
-                            
-                            scale = 1
-                            lastScale = 1
-                            
-                            Settings.shared.setBoardWidth(width)
-                            Settings.shared.setBoardHeight(height)
-                            
-                            showPopover = false
+                        let pixels = width * height
+                        if pixels >= 1 && pixels < 10000000 {
+                            gameManager.resizeBoard(width: width, height: height)
+                            boardViewModel.resizeBoard(width: width, height: height)
                         } else {
-                            errorMessage = "Width and height must be between 1 and 10,000"
+                            errorMessage = "Total pixels must be between 1 and 1,000,000, attempted \(pixels)"
                             showError = true
                         }
                     } else {
-                        errorMessage = "Please enter valid numbers"
+                        errorMessage = "Integer numbers only"
                         showError = true
                     }
                 }
@@ -91,52 +71,22 @@ struct BoardSizePopoverView: View {
             }
         }
         .padding()
-        //.frame(minWidth: 250)
     }
 }
 
 #Preview {
-    struct Preview: View {
-        @State var board: Board = Board(width: 10, height: 10)
-        @State var offset: CGSize = .zero
-        @State var lastOffset: CGSize = .zero
-        @State var scale: CGFloat = 1
-        @State var lastScale: CGFloat = 1
-        
-        @State var cellSize: CGFloat = 10
-        @State var baseCellSize: CGFloat = 10
-        @State var boardViewHeight: CGFloat = 600
-        @State var boardViewWidth: CGFloat = 400
-        
-        @State var showPopover: Bool = false
-        @State var newWidth: String = ""
-        @State var newHeight: String = ""
-        
-        @State private var showError = false
-        @State private var errorMessage = ""
-        
-        init() {
-            board.randomize()
-        }
-        
-        var body: some View {
-            BoardSizePopoverView(
-                board: $board,
-                offset: $offset,
-                lastOffset: $lastOffset,
-                scale: $scale,
-                lastScale: $lastScale,
-                cellSize: $cellSize,
-                baseCellSize: $baseCellSize,
-                boardViewWidth: $boardViewWidth,
-                boardViewHeight: $boardViewHeight,
-                showPopover: $showPopover,
-                newWidth: $newWidth,
-                newHeight: $newHeight
-            )
-        }
-    }
+    @Previewable @State var newHeight: String = "10"
+    @Previewable @State var newWidth: String = "10"
+    @Previewable @State var showPopover: Bool = false
     
-    return Preview()
+    let gameManager = GameManager()
+    let boardViewModel = BoardViewModel()
+    
+    BoardSizePopoverView(
+        showPopover: $showPopover,
+        newWidth: $newWidth,
+        newHeight: $newHeight
+    )
+    .environment(gameManager)
+    .environment(boardViewModel)
 }
-

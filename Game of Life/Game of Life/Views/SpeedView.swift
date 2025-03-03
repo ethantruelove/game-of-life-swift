@@ -31,16 +31,7 @@ struct SpeedView: View {
 }
 
 #Preview {
-    struct Preview: View {
-        @State private var tickTime: Double = 1
-        
-        var body: some View {
-            SpeedView(
-                tickTime: $tickTime,
-                onTickChange: {}
-            )
-        }
-    }
+    @Previewable @State var tickTime: Double = 1
     
-    return Preview()
+    SpeedView(tickTime: $tickTime, onTickChange: {})
 }
