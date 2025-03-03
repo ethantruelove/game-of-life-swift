@@ -11,7 +11,7 @@ import Combine
 struct HomeView: View {
     private let launchCount: Int
     @State private var showRateView: Bool
-
+    
     @Environment(GameManager.self) private var gameManager
     @Environment(BoardViewModel.self) private var boardViewModel
     
@@ -40,54 +40,52 @@ struct HomeView: View {
             // attribution: https://stackoverflow.com/questions/60021403/how-to-get-height-and-width-of-view-or-screen-in-swiftui
             // attribution: https://developer.apple.com/documentation/swiftui/geometryreader
             GeometryReader { geometry in
-                ZStack(alignment: .bottom) {
-                    GameBoardView(
+                GameBoardView(
+                    gameManager: _gameManager,
+                    boardViewModel: _boardViewModel
+                )
+                .frame(width: geometry.size.width, height: geometry.size.height)
+                .clipped()
+                .onAppear() {
+                    let minWidth = geometry.size.width / CGFloat(gameManager.board.width)
+                    let minHeight = geometry.size.height / CGFloat(gameManager.board.height)
+                    boardViewModel.baseCellSize = min(minWidth, minHeight)
+                    boardViewModel.cellSize = boardViewModel.baseCellSize
+                    
+                    boardViewModel.boardViewWidth = geometry.size.width
+                    boardViewModel.boardViewHeight = geometry.size.height
+                }
+                .onReceive(gameManager.timer) { _ in
+                    if gameManager.board.autoplay {
+                        gameManager.tick()
+                    }
+                }
+                
+                VStack() {
+                    HStack {
+                        Spacer()
+                        EditModeView(
+                            showEditModes: $showSettings,
+                            editMode: Binding(
+                                get: { boardViewModel.editMode },
+                                set: { boardViewModel.editMode = $0 }
+                            )
+                        )
+                        .padding(.trailing)
+                    }
+                    
+                    Spacer()
+                    MenuView(
                         gameManager: _gameManager,
                         boardViewModel: _boardViewModel
                     )
-                    .frame(width: geometry.size.width, height: geometry.size.height)
-                    .clipped()
-                    .onAppear() {                        
-                        let minWidth = geometry.size.width / CGFloat(gameManager.board.width)
-                        let minHeight = geometry.size.height / CGFloat(gameManager.board.height)
-                        boardViewModel.baseCellSize = min(minWidth, minHeight)
-                        boardViewModel.cellSize = boardViewModel.baseCellSize
-                        
-                        boardViewModel.boardViewWidth = geometry.size.width
-                        boardViewModel.boardViewHeight = geometry.size.height
-                    }
-                    .onReceive(gameManager.timer) { _ in
-                        if gameManager.board.autoplay {
-                            gameManager.tick()
-                        }
-                    }
-                    
-                    VStack() {
-                        HStack {
-                            Spacer()
-                            EditModeView(
-                                showEditModes: $showSettings,
-                                editMode: Binding(
-                                    get: { boardViewModel.editMode },
-                                    set: { boardViewModel.editMode = $0 }
-                                )
-                            )
-                            .padding(.trailing)
-                        }
-                        
-                        Spacer()
-                        MenuView(
-                            gameManager: _gameManager,
-                            boardViewModel: _boardViewModel
-                        )
-                        .background(Color("dead"))
-                        .padding(.bottom)
-                    }
-                    .frame(width: geometry.size.width, height: geometry.size.height)
+                    .background(Color("dead").shadow(color: Color("alive"), radius: 2, y: -1))
+                    .padding(.bottom)
                 }
+                .frame(width: geometry.size.width, height: geometry.size.height)
             }
             .edgesIgnoringSafeArea(.bottom)
-        
+            
             if showRateView {
                 ZStack {
                     Color.black.opacity(0.4)

@@ -125,10 +125,6 @@ struct MenuView: View {
             }
         }
         .padding(.vertical)
-        .background(
-            Rectangle().fill(Color("dead"))
-                .shadow(color: Color("alive"), radius: 2, y: -1)
-        )
     }
     
     private func clearSelectedImage() {
