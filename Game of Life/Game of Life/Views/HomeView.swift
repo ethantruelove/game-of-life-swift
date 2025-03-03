@@ -10,7 +10,8 @@ import Combine
 
 struct HomeView: View {
     private let launchCount: Int
-    @State private var showRateView: Bool
+    @State private var askForReview: Bool
+    @State private var showRateView: Bool = false
     
     @Environment(GameManager.self) private var gameManager
     @Environment(BoardViewModel.self) private var boardViewModel
@@ -21,10 +22,10 @@ struct HomeView: View {
     init(launchCount: Int) {
         self.launchCount = launchCount
         
-        if launchCount == 2 {
-            self.showRateView = true
+        if launchCount == 4 {
+            self.askForReview = true
         } else {
-            self.showRateView = false
+            self.askForReview = false
         }
         
         let sWidth = Settings.shared.boardWidth
@@ -102,6 +103,12 @@ struct HomeView: View {
         .onChange(of: scenePhase) { old, new in
             gameManager.handleScenePhaseChange(old: old, new: new)
         }
+        .alert("Enjoying the Game of Life?\nLeave a Rating!", isPresented: $askForReview) {
+            Button("Dismiss") {}
+            Button("Rate") {
+                showRateView = true
+            }
+        }
     }
 }
 
@@ -118,7 +125,7 @@ struct HomeView: View {
     let gameManager = GameManager(width: 40, height: 80)
     let boardViewModel = BoardViewModel()
     
-    HomeView(launchCount: 2)
+    HomeView(launchCount: 4)
         .environment(gameManager)
         .environment(boardViewModel)
 }

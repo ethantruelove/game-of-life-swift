@@ -18,7 +18,7 @@ struct RateView: View {
                 .cornerRadius(10)
             VStack {
                 Spacer()
-                Text("Thanks for playing!\nLeave a review?")
+                Text("Thanks for playing!")
                     .multilineTextAlignment(.center)
                     .padding(.bottom)
                 StarView()
