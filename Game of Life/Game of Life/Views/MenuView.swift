@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Combine
+import PhotosUI
 
 struct MenuView: View {
     @Binding var offset: CGSize
@@ -28,6 +29,10 @@ struct MenuView: View {
     
     @State private var showSpeedView = false
     
+    @State private var selectedItem: PhotosPickerItem?
+    @State private var selectedImageData: Data?
+    @State private var selectedImage: UIImage?
+    
     var body: some View {
         VStack {
             if showSpeedView {
@@ -42,6 +47,34 @@ struct MenuView: View {
             }
             
             HStack {
+                Spacer()
+                
+                PhotosPicker(
+                    selection: $selectedItem,
+                    matching: .images,
+                    photoLibrary: .shared()
+                ) {
+                    Image(systemName: "photo.on.rectangle")
+                }
+                // attribution: https://developer.apple.com/documentation/photokit/bringing-photos-picker-to-your-swiftui-app
+                // attribution: https://www.hackingwithswift.com/quick-start/swiftui/how-to-let-users-select-pictures-using-photospicker
+                .onChange(of: selectedItem) { _, newValue in
+                    if let newValue {
+                        Task {
+                            if let data = try? await newValue.loadTransferable(type: Data.self) {
+                                await MainActor.run {
+                                    selectedImageData = data
+                                }
+                            }
+                        }
+                    }
+                }
+                .onChange(of: selectedImageData) {
+                    if let selectedImageData, let uiImage = UIImage(data: selectedImageData) {
+                        convertImageToBoard(uiImage: uiImage)
+                    }
+                }
+
                 Spacer()
                 
                 // attribution: https://www.swiftyplace.com/blog/swiftui-popovers-and-popups
@@ -79,11 +112,7 @@ struct MenuView: View {
                 
                 Spacer()
                 Button(action: {
-                    offset = .zero
-                    lastOffset = .zero
-                    scale = 1
-                    lastScale = 1
-                    cellSize = baseCellSize
+                    centerBoard()
                 }) {
                     Image(systemName: "dot.scope")
                 }
@@ -133,6 +162,80 @@ struct MenuView: View {
     func restartAutoplay() {
         stopAutoplay()
         startAutoplay()
+    }
+    
+    private func centerBoard() {
+        offset = .zero
+        lastOffset = .zero
+        scale = 1
+        lastScale = 1
+        cellSize = baseCellSize
+    }
+    
+    private func clearSelectedImage() {
+        selectedItem = nil
+        selectedImage = nil
+        selectedImageData = nil
+    }
+    
+    private func convertImageToBoard(uiImage: UIImage) {
+        guard let cgImage = uiImage.cgImage else {
+            return
+        }
+        
+        let reduction = min(1, 100000 / (uiImage.size.width * uiImage.size.height))
+        let width = Int(uiImage.size.width * pow(reduction, 0.5))
+        let height = Int(uiImage.size.height * pow(reduction, 0.5))
+        
+        board = Board(width: width, height: height)
+        offset = .zero
+        lastOffset = .zero
+
+        baseCellSize = min(boardViewWidth / CGFloat(board.width), boardViewHeight / CGFloat(board.height))
+        cellSize = baseCellSize
+        
+        scale = 1
+        lastScale = 1
+        
+        Settings.shared.setBoardWidth(width)
+        Settings.shared.setBoardHeight(height)
+        
+        // attribution: https://stackoverflow.com/questions/40178846/convert-uiimage-to-grayscale-keeping-image-quality
+        // attribution: https://stackoverflow.com/questions/31966885/resize-uiimage-to-200x200pt-px
+        guard let context = CGContext(
+            data: nil,
+            width: width,
+            height: height,
+            bitsPerComponent: 8,
+            bytesPerRow: width,
+            space: CGColorSpaceCreateDeviceGray(),
+            bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.none.rawValue).rawValue
+        ) else { return }
+    
+        context.draw(cgImage, in: CGRect(x: 0, y: 0, width: width, height: height))
+        
+        // attribution: https://stackoverflow.com/questions/33214508/how-do-i-get-the-rgb-value-of-a-pixel-using-cgcontext
+        guard let pixelData = context.data else { return }
+        let buffer = pixelData.bindMemory(to: UInt8.self, capacity: width * height)
+        
+        // attribution: https://developer.apple.com/documentation/foundation/data/2832722-advanced
+        // attribution: https://developer.apple.com/documentation/swift/unsafemutablepointer/pointee/
+        let sum = (0..<(height * width)).reduce(0) { acc, index in
+            acc + Int(buffer.advanced(by: index).pointee)
+        }
+        let threshold = Double(sum) / Double(height * width)
+        
+        board.cells.removeAll()
+        for y in (0..<height).reversed() {
+            for x in (0..<width).reversed() {
+                if buffer[y * width + x] < UInt8(threshold) {
+                    board.setCell(x: x, y: y, state: true)
+                }
+            }
+        }
+        
+        centerBoard()
+        clearSelectedImage()
     }
 }
 
