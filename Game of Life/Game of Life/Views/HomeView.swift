@@ -47,17 +47,7 @@ struct HomeView: View {
                     )
                     .frame(width: geometry.size.width, height: geometry.size.height)
                     .clipped()
-                    .onAppear() {
-                        let screenWidth = geometry.size.width
-                        let screenHeight = geometry.size.height * 0.75
-                        let gridWidth = CGFloat(gameManager.board.width) * boardViewModel.cellSize
-                        let gridheight = CGFloat(gameManager.board.height) * boardViewModel.cellSize
-                        
-                        boardViewModel.initialOffset = CGSize(
-                            width: max(0, (screenWidth - gridWidth) / 2),
-                            height: max(0, (screenHeight - gridheight) / 2)
-                        )
-                        
+                    .onAppear() {                        
                         let minWidth = geometry.size.width / CGFloat(gameManager.board.width)
                         let minHeight = geometry.size.height / CGFloat(gameManager.board.height)
                         boardViewModel.baseCellSize = min(minWidth, minHeight)

@@ -12,7 +12,6 @@ import Observation
 class BoardViewModel {
     var cellSize: CGFloat
     var baseCellSize: CGFloat
-    var initialOffset: CGSize
     var offset: CGSize
     var lastOffset: CGSize
     var scale: CGFloat
@@ -24,7 +23,6 @@ class BoardViewModel {
     init(cellSize: CGFloat = 5) {
         self.cellSize = cellSize
         self.baseCellSize = cellSize
-        self.initialOffset = .zero
         self.offset = .zero
         self.lastOffset = .zero
         self.scale = 1
@@ -55,44 +53,25 @@ class BoardViewModel {
         boardViewWidth = viewWidth
         boardViewHeight = viewHeight
         
-        let screenWidth = viewWidth
-        let screenHeight = viewHeight * 0.75
-        let gridWidth = CGFloat(boardWidth) * cellSize
-        let gridHeight = CGFloat(boardHeight) * cellSize
-        
-        initialOffset = CGSize(
-            width: max(0, (screenWidth - gridWidth) / 2),
-            height: max(0, (screenHeight - gridHeight) / 2)
-        )
-        
         let minWidth = viewWidth / CGFloat(boardWidth)
         let minHeight = viewHeight / CGFloat(boardHeight)
         baseCellSize = min(minWidth, minHeight)
         cellSize = baseCellSize
     }
     
-    func updateInitialOffsetForZoom(oldCellSize: CGFloat, newCellSize: CGFloat, boardWidth: Int, boardHeight: Int) {
-        let oldGridWidth = CGFloat(boardWidth) * oldCellSize
-        let newGridWidth = CGFloat(boardWidth) * newCellSize
-        let oldGridHeight = CGFloat(boardHeight) * oldCellSize
-        let newGridHeight = CGFloat(boardHeight) * newCellSize
-        
-        let widthDifference = newGridWidth - oldGridWidth
-        let heightDifference = newGridHeight - oldGridHeight
-        
-        initialOffset = CGSize(
-            width: initialOffset.width == 0 ? 0 : initialOffset.width - (widthDifference / 2),
-            height: initialOffset.height == 0 ? 0 : initialOffset.height - (heightDifference / 2)
-        )
-    }
-    
     func handleZoomGesture(value: MagnifyGesture.Value, boardWidth: Int, boardHeight: Int) {
         let newScale = lastScale * value.magnification
-        scale = min(max(newScale, 0.1), 10)
+        let maxScale = min(boardViewWidth, boardViewHeight) / baseCellSize // 1 cell per smallest side
+        let minScale = 1.0 / 3.0 // 1/3 of original side length (1/9 area)
         
-        let oldCellSize = cellSize
+        if newScale < minScale {
+            scale = minScale
+        } else if newScale > maxScale {
+            scale = maxScale
+        } else {
+            scale = newScale
+        }
         cellSize = baseCellSize * scale
-        updateInitialOffsetForZoom(oldCellSize: oldCellSize, newCellSize: cellSize, boardWidth: boardWidth, boardHeight: boardHeight)
     }
     
     func handlePanGesture(value: DragGesture.Value) {
