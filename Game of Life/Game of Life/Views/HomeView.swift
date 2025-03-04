@@ -12,6 +12,7 @@ struct HomeView: View {
     private let launchCount: Int
     @State private var askForReview: Bool
     @State private var showRateView: Bool = false
+    @State private var showInfoView: Bool = false
     
     @Environment(GameManager.self) private var gameManager
     @Environment(BoardViewModel.self) private var boardViewModel
@@ -59,6 +60,13 @@ struct HomeView: View {
                 
                 VStack() {
                     HStack {
+                        Button(action: {
+                            showInfoView = true
+                        }) {
+                            Image(systemName: "info.circle")
+                                .foregroundStyle(.gray)
+                        }
+                        .padding(.leading)
                         Spacer()
                         EditModeView(
                             showEditModes: $showSettings,
@@ -93,6 +101,18 @@ struct HomeView: View {
                         .transition(.opacity)
                         .animation(.easeInOut, value: showRateView)
                 }
+            }
+            
+            if showInfoView {
+                ZStack {
+                    Color.black.opacity(0.1)
+                        .edgesIgnoringSafeArea(.all)
+                        .onTapGesture {
+                            showInfoView = false
+                        }
+                    InfoView()
+                }
+                
             }
         }
         .onChange(of: scenePhase) { old, new in
