@@ -18,6 +18,20 @@ struct ImageProcessor {
             return false
         }
         
+        var imageWidth = uiImage.size.width
+        var imageHeight = uiImage.size.height
+        
+        // need to make sure photo is "up"
+        // attribution: https://stackoverflow.com/questions/61149127/ensuring-image-data-is-correctly-oriented-on-ios-app-in-swift-5
+        // attribution: https://developer.apple.com/documentation/swiftui/image/orientation
+        // attribution: https://stackoverflow.com/questions/62266178/swift-function-that-swaps-two-values
+        switch uiImage.imageOrientation {
+        case .left, .right, .leftMirrored, .rightMirrored:
+            swap(&imageWidth, &imageHeight)
+        default:
+            break
+        }
+        
         let reduction = min(1, 100000 / (uiImage.size.width * uiImage.size.height))
         let width = Int(uiImage.size.width * pow(reduction, 0.5))
         let height = Int(uiImage.size.height * pow(reduction, 0.5))
@@ -31,6 +45,19 @@ struct ImageProcessor {
         )
         boardViewModel.cellSize = boardViewModel.baseCellSize
         
+        // attribution: https://stackoverflow.com/questions/41991903/swift-images-rotated-from-portrait-to-landscape-when-loaded-from-firebase
+        // attribution: https://stackoverflow.com/questions/27092354/rotating-uiimage-in-swift
+        // attribution: https://stackoverflow.com/questions/21785254/uigraphicsgetcurrentcontext-vs-uigraphicsbeginimagecontext-uigraphicsendimagecon
+        // attribution: https://www.hackingwithswift.com/guide/ios-classic/10/2/key-points
+        UIGraphicsBeginImageContextWithOptions(CGSize(width: width, height: height), false, 1.0)
+        guard let _ = UIGraphicsGetCurrentContext() else { return false }
+        uiImage.draw(in: CGRect(x: 0, y: 0, width: width, height: height))
+        
+        guard let normalizedImage = UIGraphicsGetImageFromCurrentImageContext(),
+              let normalizedCGImage = normalizedImage.cgImage else {
+            return false
+        }
+        
         // attribution: https://stackoverflow.com/questions/40178846/convert-uiimage-to-grayscale-keeping-image-quality
         // attribution: https://stackoverflow.com/questions/31966885/resize-uiimage-to-200x200pt-px
         guard let context = CGContext(
@@ -42,8 +69,8 @@ struct ImageProcessor {
             space: CGColorSpaceCreateDeviceGray(),
             bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.none.rawValue).rawValue
         ) else { return false }
-    
-        context.draw(cgImage, in: CGRect(x: 0, y: 0, width: width, height: height))
+        
+        context.draw(normalizedCGImage, in: CGRect(x: 0, y: 0, width: width, height: height))
         
         // attribution: https://stackoverflow.com/questions/33214508/how-do-i-get-the-rgb-value-of-a-pixel-using-cgcontext
         guard let pixelData = context.data else { return false }
