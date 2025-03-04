@@ -57,7 +57,7 @@ struct HomeView: View {
                     boardViewModel.boardViewHeight = geometry.size.height
                 }
                 .onReceive(gameManager.timer) { _ in
-                    if gameManager.board.autoplay {
+                    if gameManager.autoplay && !gameManager.isProcessingTick {
                         gameManager.tick()
                     }
                 }

@@ -12,7 +12,6 @@ import SwiftUI
 class Board {
     let width: Int
     let height: Int
-    var autoplay: Bool
     private var lastToggledIndex: Int = -1
     var cells: Set<Int>
     
@@ -20,7 +19,6 @@ class Board {
         self.width = width
         self.height = height
         self.cells = Set<Int>()
-        self.autoplay = false
     }
     
     private func index(x: Int, y: Int) -> Int {
@@ -62,39 +60,46 @@ class Board {
         }
     }
     
-    func tick() {
-        var cellsToCheck = Set<Int>()
-        
-        for cellIdx in cells {
-            let (x, y) = coordinates(from: cellIdx)
-            cellsToCheck.insert(cellIdx)
+    func tickAsync() async {
+        // attribution: https://www.avanderlee.com/concurrency/detached-tasks/
+        let nextGeneration = await Task.detached() { [self] in
+            var cellsToCheck = Set<Int>()
             
-            for dx in -1...1 {
-                for dy in -1...1 {
-                    let nX = x + dx
-                    let nY = y + dy
-                    if nX >= 0 && nX < width && nY >= 0 && nY < height {
-                        cellsToCheck.insert(index(x: nX, y: nY))
+            for cellIdx in cells {
+                let (x, y) = coordinates(from: cellIdx)
+                cellsToCheck.insert(cellIdx)
+                
+                for dx in -1...1 {
+                    for dy in -1...1 {
+                        let nX = x + dx
+                        let nY = y + dy
+                        if nX >= 0 && nX < width && nY >= 0 && nY < height {
+                            cellsToCheck.insert(index(x: nX, y: nY))
+                        }
                     }
                 }
             }
-        }
-        
-        var nextGen = Set<Int>()
-        
-        for cellIdx in cellsToCheck {
-            let (x, y) = coordinates(from: cellIdx)
-            let isAlive = cells.contains(cellIdx)
-            let nCount = aliveNeighborCount(x: x, y: y)
             
-            if isAlive && (nCount == 2 || nCount == 3) {
-                nextGen.insert(cellIdx)
-            } else if !isAlive && nCount == 3 {
-                nextGen.insert(cellIdx)
+            var nextGen = Set<Int>()
+            
+            for cellIdx in cellsToCheck {
+                let (x, y) = coordinates(from: cellIdx)
+                let isAlive = cells.contains(cellIdx)
+                let nCount = aliveNeighborCount(x: x, y: y)
+                
+                if isAlive && (nCount == 2 || nCount == 3) {
+                    nextGen.insert(cellIdx)
+                } else if !isAlive && nCount == 3 {
+                    nextGen.insert(cellIdx)
+                }
             }
-        }
+            
+            return nextGen
+        }.value
         
-        cells = nextGen
+        await MainActor.run {
+            self.cells = nextGeneration
+        }
     }
     
     private func aliveNeighborCount(x: Int, y: Int) -> Int {

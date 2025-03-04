@@ -28,15 +28,11 @@ struct Game_of_LifeApp: App {
                 } else {
                     SplashScreenView()
                         .onTapGesture {
-                            withAnimation {
-                                showSplashScreen = false
-                            }
+                            showSplashScreen = false
                         }
                         .onAppear {
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                                withAnimation {
-                                    showSplashScreen = false
-                                }
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+                                showSplashScreen = false
                             }
                             
                             Settings.shared.loadDefaults()
@@ -47,7 +43,6 @@ struct Game_of_LifeApp: App {
                                 completedLaunch = true
                             }
                         }
-                        .transition(.opacity)
                 }
             }
             // attribution: https://www.jessesquires.com/blog/2024/06/29/swiftui-scene-phase/

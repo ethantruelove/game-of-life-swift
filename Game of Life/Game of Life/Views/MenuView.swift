@@ -119,7 +119,7 @@ struct MenuView: View {
                 Button(action: {
                     gameManager.toggleAutoplay()
                 }) {
-                    Image(systemName: gameManager.board.autoplay ? "pause.fill" : "play.fill")
+                    Image(systemName: gameManager.autoplay ? "pause.fill" : "play.fill")
                 }
                 Spacer()
             }

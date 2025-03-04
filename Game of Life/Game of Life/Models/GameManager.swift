@@ -14,6 +14,8 @@ class GameManager {
     var board: Board
     var tickTime: Double
     var timer: Publishers.Autoconnect<Timer.TimerPublisher>
+    var autoplay: Bool
+    var isProcessingTick: Bool = false
     
     init(width: Int = Settings.shared.boardWidth,
          height: Int = Settings.shared.boardHeight,
@@ -21,6 +23,7 @@ class GameManager {
         self.board = Board(width: width, height: height)
         self.tickTime = tickTime
         self.timer = Timer.publish(every: 1000000, on: .main, in: .common).autoconnect()
+        self.autoplay = false
         self.board.randomize()
     }
     
@@ -39,15 +42,20 @@ class GameManager {
     }
     
     func tick() {
-        board.tick()
+        guard !isProcessingTick else { return }
+        Task {
+            await MainActor.run { isProcessingTick = true }
+            await board.tickAsync()
+            await MainActor.run { isProcessingTick = false }
+        }
     }
     
     func toggleAutoplay() {
-        board.autoplay.toggle()
+        autoplay.toggle()
         
-        // Stop no matter what in case user hits too quickly
+        // stop no matter what in case user hits too quickly
         stopAutoplay()
-        if board.autoplay {
+        if autoplay {
             startAutoplay()
         }
     }
@@ -68,20 +76,20 @@ class GameManager {
         tickTime = newTickTime
         Settings.shared.setTickTime(tickTime)
         
-        if board.autoplay {
+        if autoplay {
             restartAutoplay()
         }
     }
     
     func handleScenePhaseChange(old: ScenePhase, new: ScenePhase) {
         if old == .active {
-            if board.autoplay {
+            if autoplay {
                 stopAutoplay()
             }
         }
         
         if new == .active {
-            if board.autoplay {
+            if autoplay {
                 startAutoplay()
             }
         }
