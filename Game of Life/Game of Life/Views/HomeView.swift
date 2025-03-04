@@ -48,45 +48,38 @@ struct HomeView: View {
                 )
                 .frame(width: geometry.size.width, height: geometry.size.height)
                 .clipped()
-                .onAppear() {
-                    let minWidth = geometry.size.width / CGFloat(gameManager.board.width)
-                    let minHeight = geometry.size.height / CGFloat(gameManager.board.height)
-                    boardViewModel.baseCellSize = min(minWidth, minHeight)
-                    boardViewModel.cellSize = boardViewModel.baseCellSize
-                    
-                    boardViewModel.boardViewWidth = geometry.size.width
-                    boardViewModel.boardViewHeight = geometry.size.height
-                }
                 
-                VStack() {
-                    HStack {
-                        Button(action: {
-                            showInfoView = true
-                        }) {
-                            Image(systemName: "info.circle")
-                                .foregroundStyle(.gray)
-                        }
-                        .padding(.leading)
-                        Spacer()
-                        EditModeView(
-                            showEditModes: $showSettings,
-                            editMode: Binding(
-                                get: { boardViewModel.editMode },
-                                set: { boardViewModel.editMode = $0 }
+                if !boardViewModel.isInteracting {
+                    VStack() {
+                        HStack {
+                            Button(action: {
+                                showInfoView = true
+                            }) {
+                                Image(systemName: "info.circle")
+                                    .foregroundStyle(.gray)
+                            }
+                            .padding(.leading)
+                            Spacer()
+                            EditModeView(
+                                showEditModes: $showSettings,
+                                editMode: Binding(
+                                    get: { boardViewModel.editMode },
+                                    set: { boardViewModel.editMode = $0 }
+                                )
                             )
+                            .padding(.trailing)
+                        }
+                        
+                        Spacer()
+                        MenuView(
+                            gameManager: _gameManager,
+                            boardViewModel: _boardViewModel
                         )
-                        .padding(.trailing)
+                        .background(Color("dead").shadow(color: Color("alive"), radius: 2, y: -1))
+                        .padding(.bottom)
                     }
-                    
-                    Spacer()
-                    MenuView(
-                        gameManager: _gameManager,
-                        boardViewModel: _boardViewModel
-                    )
-                    .background(Color("dead").shadow(color: Color("alive"), radius: 2, y: -1))
-                    .padding(.bottom)
+                    .frame(width: geometry.size.width, height: geometry.size.height)
                 }
-                .frame(width: geometry.size.width, height: geometry.size.height)
             }
             .edgesIgnoringSafeArea(.bottom)
             

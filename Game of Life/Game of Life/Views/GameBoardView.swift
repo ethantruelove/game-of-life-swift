@@ -11,23 +11,45 @@ struct GameBoardView: View {
     @Environment(GameManager.self) var gameManager
     @Environment(BoardViewModel.self) var boardViewModel
     
-    var body: some View {        
-        SimpleBoardView(
-            board: gameManager.board,
-            cellSize: boardViewModel.cellSize
-        )
-        .offset(boardViewModel.offset)
-        .onAppear() {
-            boardViewModel.scale = boardViewModel.cellSize / boardViewModel.baseCellSize
+    var body: some View {
+        GeometryReader { geometry in
+            ZStack {
+                Color("dead").opacity(0.001)
+                    .edgesIgnoringSafeArea(.all)
+                SimpleBoardView(
+                    board: gameManager.board,
+                    cellSize: boardViewModel.cellSize
+                )
+                .offset(boardViewModel.offset)
+            }
+            .onAppear() {
+                // boardViewModel.scale = boardViewModel.cellSize / boardViewModel.baseCellSize
+                boardViewModel.calculateLayout(
+                    boardWidth: gameManager.board.width,
+                    boardHeight: gameManager.board.height,
+                    viewWidth: geometry.size.width,
+                    viewHeight: geometry.size.height
+                )
+            }
+            .onChange(of: geometry.size) {
+                boardViewModel.calculateLayout(
+                    boardWidth: gameManager.board.width,
+                    boardHeight: gameManager.board.height,
+                    viewWidth: geometry.size.width,
+                    viewHeight: geometry.size.height
+                )
+            }
+            .gesture(zoomGesture
+                .simultaneously(with: singleFingerDragGesture)
+            )
         }
-        .gesture(zoomGesture
-            .simultaneously(with: singleFingerDragGesture)
-        )
     }
     
     private var singleFingerDragGesture: some Gesture {
         DragGesture(minimumDistance: 0)
             .onChanged { value in
+                boardViewModel.isInteracting = true
+                
                 if boardViewModel.editMode == .none {
                     boardViewModel.handlePanGesture(value: value)
                 } else {
@@ -35,6 +57,7 @@ struct GameBoardView: View {
                 }
             }
             .onEnded { value in
+                boardViewModel.isInteracting = false
                 if boardViewModel.editMode == .none {
                     boardViewModel.panEndGestureHandler()
                 }
@@ -44,6 +67,7 @@ struct GameBoardView: View {
     private var zoomGesture: some Gesture {
         MagnifyGesture()
             .onChanged { value in
+                boardViewModel.isInteracting = true
                 boardViewModel.handleZoomGesture(
                     value: value,
                     boardWidth: gameManager.board.width,
@@ -51,6 +75,7 @@ struct GameBoardView: View {
                 )
             }
             .onEnded { _ in
+                boardViewModel.isInteracting = false
                 boardViewModel.zoomEndGestureHandler()
             }
     }
@@ -61,7 +86,7 @@ struct GameBoardView: View {
     let boardViewModel = BoardViewModel(
         cellSize: 10
     )
-
+    
     GameBoardView()
         .environment(gameManager)
         .environment(boardViewModel)

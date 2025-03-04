@@ -12,23 +12,18 @@ import Observation
 class BoardViewModel {
     var cellSize: CGFloat
     var baseCellSize: CGFloat
-    var offset: CGSize
-    var lastOffset: CGSize
-    var scale: CGFloat
-    var lastScale: CGFloat
-    var boardViewWidth: CGFloat
-    var boardViewHeight: CGFloat
+    var offset: CGSize = .zero
+    var lastOffset: CGSize = .zero
+    var scale: CGFloat = 1
+    var lastScale: CGFloat = 1
+    var boardViewWidth: CGFloat = 0
+    var boardViewHeight: CGFloat = 0
     var editMode: EditMode = .none
+    var isInteracting: Bool = false
     
     init(cellSize: CGFloat = 5) {
         self.cellSize = cellSize
         self.baseCellSize = cellSize
-        self.offset = .zero
-        self.lastOffset = .zero
-        self.scale = 1
-        self.lastScale = 1
-        self.boardViewWidth = 0
-        self.boardViewHeight = 0
     }
     
     func resetView() {
@@ -49,13 +44,10 @@ class BoardViewModel {
         cellSize = baseCellSize
     }
     
-    func calculateInitialLayout(boardWidth: Int, boardHeight: Int, viewWidth: CGFloat, viewHeight: CGFloat) {
+    func calculateLayout(boardWidth: Int, boardHeight: Int, viewWidth: CGFloat, viewHeight: CGFloat) {
         boardViewWidth = viewWidth
         boardViewHeight = viewHeight
-        
-        let minWidth = viewWidth / CGFloat(boardWidth)
-        let minHeight = viewHeight / CGFloat(boardHeight)
-        baseCellSize = min(minWidth, minHeight)
+        baseCellSize = min(viewWidth / CGFloat(boardWidth), viewHeight / CGFloat(boardHeight))
         cellSize = baseCellSize
     }
     
