@@ -13,27 +13,29 @@ import Combine
 class GameManager {
     var board: Board
     var tickTime: Double
-    var timer: Publishers.Autoconnect<Timer.TimerPublisher>
+    var timer: Timer?
     var autoplay: Bool
     var isProcessingTick: Bool = false
+    var currentTick: Task<Void, Never>? = nil
     
     init(width: Int = Settings.shared.boardWidth,
          height: Int = Settings.shared.boardHeight,
          tickTime: Double = Settings.shared.tickTime) {
         self.board = Board(width: width, height: height)
         self.tickTime = tickTime
-        self.timer = Timer.publish(every: 1000000, on: .main, in: .common).autoconnect()
         self.autoplay = false
         self.board.randomize()
     }
-    
-    // attribution: https://www.hackingwithswift.com/books/ios-swiftui/triggering-events-repeatedly-using-a-timer
+
     func startAutoplay() {
-        timer = Timer.publish(every: pow(10, -tickTime), on: .main, in: .common).autoconnect()
+        timer = setTimer()
     }
     
     func stopAutoplay() {
-        timer.upstream.connect().cancel()
+        // attribution: https://www.hackingwithswift.com/quick-start/concurrency/how-to-cancel-a-task
+        // attribution: https://www.avanderlee.com/concurrency/detached-tasks/
+        self.currentTick?.cancel()
+        timer?.invalidate()
     }
     
     func restartAutoplay() {
@@ -41,13 +43,30 @@ class GameManager {
         startAutoplay()
     }
     
-    func tick() {
-        guard !isProcessingTick else { return }
-        Task {
+    func setTimer() -> Timer {
+        // set up timer for next tick only to accomodate if processing time > tick freq and not stack calls
+        return Timer.scheduledTimer(withTimeInterval: pow(10, -tickTime), repeats: false) { _ in
+            self.currentTick = self.tick()
+       }
+    }
+    
+    func tick() -> Task<Void, Never>? {
+        guard !isProcessingTick else { return nil }
+        return Task {
             await MainActor.run { isProcessingTick = true }
             await board.tickAsync()
-            await MainActor.run { isProcessingTick = false }
+            await MainActor.run {
+                isProcessingTick = false
+                if self.autoplay {
+                    scheduleTick()
+                }
+            }
         }
+    }
+    
+    private func scheduleTick() {
+        timer?.invalidate()
+        timer = setTimer()
     }
     
     func toggleAutoplay() {
@@ -57,6 +76,7 @@ class GameManager {
         stopAutoplay()
         if autoplay {
             startAutoplay()
+            self.currentTick = tick()
         }
     }
     

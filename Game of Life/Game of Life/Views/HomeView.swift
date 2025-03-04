@@ -56,11 +56,6 @@ struct HomeView: View {
                     boardViewModel.boardViewWidth = geometry.size.width
                     boardViewModel.boardViewHeight = geometry.size.height
                 }
-                .onReceive(gameManager.timer) { _ in
-                    if gameManager.autoplay && !gameManager.isProcessingTick {
-                        gameManager.tick()
-                    }
-                }
                 
                 VStack() {
                     HStack {

@@ -111,7 +111,7 @@ struct MenuView: View {
                 }
                 Spacer()
                 Button(action: {
-                    gameManager.tick()
+                    gameManager.currentTick = gameManager.tick()
                 }) {
                     Image(systemName: "arrow.forward")
                 }
