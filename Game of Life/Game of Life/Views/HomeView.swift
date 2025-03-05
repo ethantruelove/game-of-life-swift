@@ -28,13 +28,6 @@ struct HomeView: View {
         } else {
             self.askForReview = false
         }
-        
-        let sWidth = Settings.shared.boardWidth
-        let sHeight = Settings.shared.boardHeight
-        let sTickTime = Settings.shared.tickTime
-        
-        let gameManager = GameManager(width: sWidth, height: sHeight, tickTime: sTickTime)
-        gameManager.board.randomize()
     }
     
     var body: some View {
@@ -56,7 +49,9 @@ struct HomeView: View {
                                 showInfoView = true
                             }) {
                                 Image(systemName: "info.circle")
+                                    .font(.system(size: 25))
                                     .foregroundStyle(.gray)
+                                    .padding()
                             }
                             .padding(.leading)
                             Spacer()

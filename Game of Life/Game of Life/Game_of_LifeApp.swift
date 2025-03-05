@@ -14,17 +14,19 @@ struct Game_of_LifeApp: App {
     @Environment(\.scenePhase) private var scenePhase: ScenePhase
     @State private var completedLaunch: Bool = false
     
-    private var gameManager = GameManager()
-    private var boardViewModel = BoardViewModel()
+    @State private var gameManager: GameManager? = nil
+    @State private var boardViewModel: BoardViewModel? = nil
     
     var body: some Scene {
         WindowGroup {
             ZStack {
                 if !showSplashScreen {
-                    // attribution: https://stackoverflow.com/questions/76958093/how-to-bind-environment-variable-ios17
-                    HomeView(launchCount: launchCount)
-                        .environment(gameManager)
-                        .environment(boardViewModel)
+                    if let gameManager, let boardViewModel {
+                        // attribution: https://stackoverflow.com/questions/76958093/how-to-bind-environment-variable-ios17
+                        HomeView(launchCount: launchCount)
+                            .environment(gameManager)
+                            .environment(boardViewModel)
+                    }
                 } else {
                     SplashScreenView()
                         .onTapGesture {
@@ -36,6 +38,12 @@ struct Game_of_LifeApp: App {
                             }
                             
                             Settings.shared.loadDefaults()
+                            let sWidth = Settings.shared.boardWidth
+                            let sHeight = Settings.shared.boardHeight
+                            let sTickTime = Settings.shared.tickTime
+                            self.gameManager = GameManager(width: sWidth, height: sHeight, tickTime: sTickTime)
+                            gameManager?.board.randomize()
+                            self.boardViewModel = BoardViewModel()
                             
                             if !completedLaunch {
                                 launchCount = Settings.shared.launchCount

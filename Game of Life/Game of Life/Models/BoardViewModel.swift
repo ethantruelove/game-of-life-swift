@@ -35,8 +35,6 @@ class BoardViewModel {
     init(cellSize: CGFloat = 5) {
         self.cellSize = cellSize
         self.baseCellSize = cellSize
-        
-        print("Init", baseCellSize, containerSize, containingIndex)
     }
     
     func resetView() {
@@ -56,8 +54,6 @@ class BoardViewModel {
         lastOffset = initialOffset
         scale = 1
         lastScale = 1
-                
-        print("Resized", baseCellSize, containerSize, containingIndex)
     }
     
     func calculateOffsetForContainingView(boardWidth: Int, boardHeight: Int) -> CGSize {
