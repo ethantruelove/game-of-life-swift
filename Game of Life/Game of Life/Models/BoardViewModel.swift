@@ -25,11 +25,15 @@ class BoardViewModel {
     var zoomAnchorPoint: CGPoint? = nil
     
     var containerSize: Int {
-        return Int(max(boardViewWidth / baseCellSize, boardViewHeight / baseCellSize) * 10)
+        var containerSize = Int(max(boardViewWidth / baseCellSize, boardViewHeight / baseCellSize))// * 10
+        if containerSize % 2 == 0 {
+            containerSize += 1
+        }
+        return containerSize
     }
     
     var containingIndex: CGFloat {
-        return (CGFloat(containerSize) - 1) / 2
+        return CGFloat(containerSize - 1) / 2
     }
     
     init(cellSize: CGFloat = 5) {
@@ -47,25 +51,18 @@ class BoardViewModel {
     
     func resizeBoard(width: Int, height: Int, boardWidth: Int, boardHeight: Int) {
         baseCellSize = min(boardViewWidth / CGFloat(width), boardViewHeight / CGFloat(height))
-        cellSize = baseCellSize
-
         initialOffset = calculateOffsetForContainingView(boardWidth: boardWidth, boardHeight: boardHeight)
-        offset = initialOffset
-        lastOffset = initialOffset
-        scale = 1
-        lastScale = 1
+        
+        resetView()
     }
     
     func calculateOffsetForContainingView(boardWidth: Int, boardHeight: Int) -> CGSize {
         let totalBoardWidth = baseCellSize * CGFloat(boardWidth)
         let totalBoardHeight = baseCellSize * CGFloat(boardHeight)
-        
         let xOffset = (boardViewWidth - totalBoardWidth) / 2
         let yOffset = (boardViewHeight - totalBoardHeight) / 2
-        
-        let containerOffset = CGFloat(containerSize - 1) / 2
-        let adjXOffset = xOffset - containerOffset * totalBoardWidth
-        let adjYOffset = yOffset - containerOffset * totalBoardHeight
+        let adjXOffset = xOffset - containingIndex * totalBoardWidth
+        let adjYOffset = yOffset - containingIndex * totalBoardHeight
     
         return CGSize(width: adjXOffset, height: adjYOffset)
     }
@@ -74,11 +71,9 @@ class BoardViewModel {
         boardViewWidth = viewWidth
         boardViewHeight = viewHeight
         baseCellSize = min(viewWidth / CGFloat(boardWidth), viewHeight / CGFloat(boardHeight))
-        cellSize = baseCellSize
-        
         initialOffset = calculateOffsetForContainingView(boardWidth: boardWidth, boardHeight: boardHeight)
-        offset = initialOffset
-        lastOffset = initialOffset
+        
+        resetView()
     }
     
     func handleZoomGesture(value: MagnifyGesture.Value, boardWidth: Int, boardHeight: Int) {
@@ -117,19 +112,29 @@ class BoardViewModel {
         )
     }
     
+    
     // attribution: https://medium.com/@carlos.camyoh/zooming-and-dragging-simultaneously-on-an-image-using-swiftui-ios-15-6fbb0007ae2c
     func handleEditGesture(value: DragGesture.Value, board: Board) {
-        let totalCellWidth = CGFloat(board.width) * cellSize
-        let totalCellHeight = CGFloat(board.height) * cellSize
+        let gridX = value.location.x - offset.width
+        let gridY = value.location.y - offset.height
         
-        let touchX = value.location.x
-        let touchY = value.location.y
+        let totalContainerWidth = cellSize * CGFloat(board.width) * CGFloat(containerSize)
+        let totalContainerHeight = cellSize * CGFloat(board.height) * CGFloat(containerSize)
         
-        let gridX = touchX - offset.width
-        let gridY = touchY - offset.height
+        let totalBoardWidth = cellSize * CGFloat(board.width)
+        let totalBoardHeight = cellSize * CGFloat(board.height)
         
-        let col = Int(floor(gridX / totalCellWidth * CGFloat(board.width)))
-        let row = Int(floor(gridY / totalCellHeight * CGFloat(board.height)))
+        let boardStartX = (totalContainerWidth - totalBoardWidth) / 2
+        let boardStartY = (totalContainerHeight - totalBoardHeight) / 2
+        
+        let boardX = gridX - boardStartX
+        let boardY = gridY - boardStartY
+        
+        let col = Int(floor(boardX / cellSize))
+        let row = Int(floor(boardY / cellSize))
+        
+        print("Grid: (\(gridX), \(gridY)) Board start: (\(boardStartX), \(boardStartY))")
+        print("Board coords: (\(boardX), \(boardY)) -> Cell: (\(col), \(row))")
         
         if col >= 0, col < board.width, row >= 0, row < board.height {
             switch editMode {
