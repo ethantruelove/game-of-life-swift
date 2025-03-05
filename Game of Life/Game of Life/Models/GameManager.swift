@@ -17,6 +17,7 @@ class GameManager {
     var autoplay: Bool
     var isProcessingTick: Bool = false
     var currentTick: Task<Void, Never>? = nil
+    var wasAutoplaying: Bool = false
     
     init(width: Int = Settings.shared.boardWidth,
          height: Int = Settings.shared.boardHeight,
@@ -104,12 +105,16 @@ class GameManager {
     func handleScenePhaseChange(old: ScenePhase, new: ScenePhase) {
         if old == .active {
             if autoplay {
+                wasAutoplaying = true
+                autoplay = false
                 stopAutoplay()
             }
         }
         
         if new == .active {
-            if autoplay {
+            if wasAutoplaying {
+                wasAutoplaying = false
+                autoplay = true
                 startAutoplay()
             }
         }
