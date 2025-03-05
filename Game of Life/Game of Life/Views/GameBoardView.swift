@@ -23,7 +23,6 @@ struct GameBoardView: View {
                 .offset(boardViewModel.offset)
             }
             .onAppear() {
-                // boardViewModel.scale = boardViewModel.cellSize / boardViewModel.baseCellSize
                 boardViewModel.calculateLayout(
                     boardWidth: gameManager.board.width,
                     boardHeight: gameManager.board.height,
@@ -48,6 +47,7 @@ struct GameBoardView: View {
     private var singleFingerDragGesture: some Gesture {
         DragGesture(minimumDistance: 0)
             .onChanged { value in
+                print("DRAGGING")
                 boardViewModel.isInteracting = true
                 
                 if boardViewModel.editMode == .none {
@@ -67,6 +67,9 @@ struct GameBoardView: View {
     private var zoomGesture: some Gesture {
         MagnifyGesture()
             .onChanged { value in
+                if !boardViewModel.isInteracting {
+                    boardViewModel.zoomAnchorPoint = CGPoint(x: value.startLocation.x, y: value.startLocation.y)
+                }
                 boardViewModel.isInteracting = true
                 boardViewModel.handleZoomGesture(
                     value: value,
@@ -77,6 +80,8 @@ struct GameBoardView: View {
             .onEnded { _ in
                 boardViewModel.isInteracting = false
                 boardViewModel.zoomEndGestureHandler()
+                boardViewModel.zoomAnchorPoint = nil
+                boardViewModel.lastOffset = boardViewModel.offset
             }
     }
 }

@@ -13,11 +13,7 @@ struct ImageProcessor {
         uiImage: UIImage,
         gameManager: GameManager,
         boardViewModel: BoardViewModel
-    ) -> Bool {
-        guard let cgImage = uiImage.cgImage else {
-            return false
-        }
-        
+    ) -> Bool {        
         var imageWidth = uiImage.size.width
         var imageHeight = uiImage.size.height
         

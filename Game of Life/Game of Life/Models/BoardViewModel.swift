@@ -20,6 +20,7 @@ class BoardViewModel {
     var boardViewHeight: CGFloat = 0
     var editMode: EditMode = .none
     var isInteracting: Bool = false
+    var zoomAnchorPoint: CGPoint? = nil
     
     init(cellSize: CGFloat = 5) {
         self.cellSize = cellSize
@@ -56,6 +57,7 @@ class BoardViewModel {
         let maxScale = min(boardViewWidth, boardViewHeight) / baseCellSize // 1 cell per smallest side
         let minScale = 1.0 / 3.0 // 1/3 of original side length (1/9 area)
         
+        let oldScale = scale
         if newScale < minScale {
             scale = minScale
         } else if newScale > maxScale {
@@ -64,6 +66,19 @@ class BoardViewModel {
             scale = newScale
         }
         cellSize = baseCellSize * scale
+        
+        let anchor = zoomAnchorPoint ?? CGPoint(x: boardViewWidth / 2, y: boardViewHeight / 2)
+        
+        let projectedPoint = CGPoint(
+            x: anchor.x - offset.width,
+            y: anchor.y - offset.height
+        )
+        
+        let ratio = scale / oldScale
+        offset = CGSize(
+            width: anchor.x - projectedPoint.x * ratio,
+            height: anchor.y - projectedPoint.y * ratio
+        )
     }
     
     func handlePanGesture(value: DragGesture.Value) {
@@ -103,6 +118,7 @@ class BoardViewModel {
     
     func zoomEndGestureHandler() {
         lastScale = scale
+        lastOffset = offset
     }
     
     func panEndGestureHandler() {
