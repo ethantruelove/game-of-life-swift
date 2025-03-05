@@ -87,6 +87,13 @@ struct ImageProcessor {
             }
         }
         
+        boardViewModel.resizeBoard(width: width, height: height, boardWidth: width, boardHeight: height)
+        boardViewModel.initialOffset = boardViewModel.calculateOffsetForContainingView(boardWidth: width, boardHeight: height)
+        boardViewModel.offset = boardViewModel.initialOffset
+        boardViewModel.lastOffset = boardViewModel.initialOffset
+        
+        UIGraphicsEndImageContext()
+        
         return true
     }
 }

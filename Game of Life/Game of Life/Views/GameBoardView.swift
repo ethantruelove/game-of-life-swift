@@ -14,14 +14,16 @@ struct GameBoardView: View {
     var body: some View {
         GeometryReader { geometry in
             ZStack {
-                Color("dead").opacity(0.001)
+                Rectangle()
+                    .foregroundStyle(Color("dead"))
+                    .frame(width: boardViewModel.cellSize * CGFloat(gameManager.board.width * boardViewModel.containerSize), height: boardViewModel.cellSize * CGFloat(gameManager.board.height * boardViewModel.containerSize))
                     .edgesIgnoringSafeArea(.all)
                 SimpleBoardView(
                     board: gameManager.board,
                     cellSize: boardViewModel.cellSize
                 )
-                .offset(boardViewModel.offset)
             }
+            .offset(boardViewModel.offset)
             .onAppear() {
                 boardViewModel.calculateLayout(
                     boardWidth: gameManager.board.width,
@@ -66,7 +68,6 @@ struct GameBoardView: View {
     private var zoomGesture: some Gesture {
         MagnifyGesture()
             .onChanged { value in
-                print(value.startAnchor, value.startLocation)
                 if !boardViewModel.isZooming {
                     boardViewModel.zoomAnchorPoint = CGPoint(x: value.startLocation.x, y: value.startLocation.y)
                 }

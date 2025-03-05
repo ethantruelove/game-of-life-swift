@@ -12,6 +12,7 @@ import Observation
 class BoardViewModel {
     var cellSize: CGFloat
     var baseCellSize: CGFloat
+    var initialOffset: CGSize = .zero
     var offset: CGSize = .zero
     var lastOffset: CGSize = .zero
     var scale: CGFloat = 1
@@ -23,27 +24,54 @@ class BoardViewModel {
     var isZooming: Bool = false
     var zoomAnchorPoint: CGPoint? = nil
     
+    var containerSize: Int {
+        return Int(max(boardViewWidth / baseCellSize, boardViewHeight / baseCellSize) * 10)
+    }
+    
+    var containingIndex: CGFloat {
+        return (CGFloat(containerSize) - 1) / 2
+    }
+    
     init(cellSize: CGFloat = 5) {
         self.cellSize = cellSize
         self.baseCellSize = cellSize
+        
+        print("Init", baseCellSize, containerSize, containingIndex)
     }
     
     func resetView() {
-        offset = .zero
-        lastOffset = .zero
+        offset = initialOffset
+        lastOffset = initialOffset
         scale = 1
         lastScale = 1
         cellSize = baseCellSize
     }
     
-    func resizeBoard(width: Int, height: Int) {
-        offset = .zero
-        lastOffset = .zero
-        scale = 1
-        lastScale = 1
-        
+    func resizeBoard(width: Int, height: Int, boardWidth: Int, boardHeight: Int) {
         baseCellSize = min(boardViewWidth / CGFloat(width), boardViewHeight / CGFloat(height))
         cellSize = baseCellSize
+
+        initialOffset = calculateOffsetForContainingView(boardWidth: boardWidth, boardHeight: boardHeight)
+        offset = initialOffset
+        lastOffset = initialOffset
+        scale = 1
+        lastScale = 1
+                
+        print("Resized", baseCellSize, containerSize, containingIndex)
+    }
+    
+    func calculateOffsetForContainingView(boardWidth: Int, boardHeight: Int) -> CGSize {
+        let totalBoardWidth = baseCellSize * CGFloat(boardWidth)
+        let totalBoardHeight = baseCellSize * CGFloat(boardHeight)
+        
+        let xOffset = (boardViewWidth - totalBoardWidth) / 2
+        let yOffset = (boardViewHeight - totalBoardHeight) / 2
+        
+        let containerOffset = CGFloat(containerSize - 1) / 2
+        let adjXOffset = xOffset - containerOffset * totalBoardWidth
+        let adjYOffset = yOffset - containerOffset * totalBoardHeight
+    
+        return CGSize(width: adjXOffset, height: adjYOffset)
     }
     
     func calculateLayout(boardWidth: Int, boardHeight: Int, viewWidth: CGFloat, viewHeight: CGFloat) {
@@ -51,6 +79,10 @@ class BoardViewModel {
         boardViewHeight = viewHeight
         baseCellSize = min(viewWidth / CGFloat(boardWidth), viewHeight / CGFloat(boardHeight))
         cellSize = baseCellSize
+        
+        initialOffset = calculateOffsetForContainingView(boardWidth: boardWidth, boardHeight: boardHeight)
+        offset = initialOffset
+        lastOffset = initialOffset
     }
     
     func handleZoomGesture(value: MagnifyGesture.Value, boardWidth: Int, boardHeight: Int) {
