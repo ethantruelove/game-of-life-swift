@@ -20,6 +20,7 @@ class BoardViewModel {
     var boardViewHeight: CGFloat = 0
     var editMode: EditMode = .none
     var isInteracting: Bool = false
+    var isZooming: Bool = false
     var zoomAnchorPoint: CGPoint? = nil
     
     init(cellSize: CGFloat = 5) {

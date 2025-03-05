@@ -47,7 +47,6 @@ struct GameBoardView: View {
     private var singleFingerDragGesture: some Gesture {
         DragGesture(minimumDistance: 0)
             .onChanged { value in
-                print("DRAGGING")
                 boardViewModel.isInteracting = true
                 
                 if boardViewModel.editMode == .none {
@@ -67,9 +66,11 @@ struct GameBoardView: View {
     private var zoomGesture: some Gesture {
         MagnifyGesture()
             .onChanged { value in
-                if !boardViewModel.isInteracting {
+                print(value.startAnchor, value.startLocation)
+                if !boardViewModel.isZooming {
                     boardViewModel.zoomAnchorPoint = CGPoint(x: value.startLocation.x, y: value.startLocation.y)
                 }
+                boardViewModel.isZooming = true
                 boardViewModel.isInteracting = true
                 boardViewModel.handleZoomGesture(
                     value: value,
@@ -78,6 +79,7 @@ struct GameBoardView: View {
                 )
             }
             .onEnded { _ in
+                boardViewModel.isZooming = false
                 boardViewModel.isInteracting = false
                 boardViewModel.zoomEndGestureHandler()
                 boardViewModel.zoomAnchorPoint = nil
