@@ -18,6 +18,7 @@ class GameManager {
     var isProcessingTick: Bool = false
     var currentTick: Task<Void, Never>? = nil
     var wasAutoplaying: Bool = false
+    var isLoading: Bool = false
     
     init(width: Int = Settings.shared.boardWidth,
          height: Int = Settings.shared.boardHeight,
@@ -25,7 +26,6 @@ class GameManager {
         self.board = Board(width: width, height: height)
         self.tickTime = tickTime
         self.autoplay = false
-        self.board.randomize()
     }
 
     func startAutoplay() {
@@ -82,12 +82,21 @@ class GameManager {
     }
     
     func randomizeBoard() {
-        board.randomize()
+        if board.width * board.height > 100000 {
+            isLoading = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                self.board.randomize()
+                self.isLoading = false
+            }
+        }
+        else {
+            self.board.randomize()
+        }
     }
     
     func resizeBoard(width: Int, height: Int) {
         board = Board(width: width, height: height)
-        board.randomize()
+        randomizeBoard()
         
         Settings.shared.setBoardWidth(width)
         Settings.shared.setBoardHeight(height)

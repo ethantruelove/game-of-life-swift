@@ -41,6 +41,9 @@ struct HomeView: View {
                 )
                 .frame(width: geometry.size.width, height: geometry.size.height)
                 .clipped()
+                .onAppear() {
+                        gameManager.randomizeBoard()
+                    }
                 
                 if !boardViewModel.isInteracting {
                     VStack() {
@@ -102,6 +105,10 @@ struct HomeView: View {
                 }
                 
             }
+            
+            if gameManager.isLoading {
+                LoadingView()
+            }
         }
         .onChange(of: scenePhase) { old, new in
             gameManager.handleScenePhaseChange(old: old, new: new)
@@ -131,4 +138,23 @@ struct HomeView: View {
     HomeView(launchCount: 4)
         .environment(gameManager)
         .environment(boardViewModel)
+}
+
+#Preview("Loading") {
+    struct Preview: View {
+        let gameManager = GameManager(width: 40, height: 80)
+        let boardViewModel = BoardViewModel()
+        
+        init() {
+            gameManager.isLoading = true
+        }
+        
+        var body: some View {
+            HomeView(launchCount: 1)
+                .environment(gameManager)
+                .environment(boardViewModel)
+        }
+    }
+    
+    return Preview()
 }

@@ -12,11 +12,10 @@ struct BoardSizePopoverView: View {
     @Environment(BoardViewModel.self) var boardViewModel
     
     @Binding var showPopover: Bool
-    @Binding var newWidth: String
-    @Binding var newHeight: String
-    
     @State private var showError = false
     @State private var errorMessage = ""
+    @State private var newWidth: String = ""
+    @State private var newHeight: String = ""
     
     var body: some View {
         VStack(spacing: 20) {
@@ -24,6 +23,8 @@ struct BoardSizePopoverView: View {
                 // attribution: https://developer.apple.com/documentation/swiftui/textfield
                 // it seems like there is a bug that makes this lag and log "Can't find or decode reasons" on the first tap until a gesture time out hits
                 // https://developer.apple.com/forums/thread/769432
+                // also seems to be a bug following the second refocus
+                // https://stackoverflow.com/questions/77800488/rtiinputsystemclient-remotetextinputsessionwithidperforminputoperation-perf
                 HStack {
                     Text("Width:")
                         .padding(.trailing, 5)
@@ -57,11 +58,12 @@ struct BoardSizePopoverView: View {
                 Button("Apply") {
                     if let width = Int(newWidth), let height = Int(newHeight) {
                         let pixels = width * height
-                        if pixels >= 1 && pixels < 10000000 {
+                        if pixels >= 1 && pixels < 1000000 {
+                            showPopover = false
                             gameManager.resizeBoard(width: width, height: height)
                             boardViewModel.resizeBoard(width: width, height: height, boardWidth: gameManager.board.width, boardHeight: gameManager.board.height)
                         } else {
-                            errorMessage = "Total pixels must be between 1 and 1,000,000, attempted \(pixels)"
+                            errorMessage = "Total area must be between 1 and 1 million"
                             showError = true
                         }
                     } else {
@@ -73,22 +75,20 @@ struct BoardSizePopoverView: View {
             }
         }
         .padding()
+        .onAppear() {
+            newWidth = "\(gameManager.board.width)"
+            newHeight = "\(gameManager.board.height)"
+        }
     }
 }
 
 #Preview {
-    @Previewable @State var newHeight: String = "10"
-    @Previewable @State var newWidth: String = "10"
     @Previewable @State var showPopover: Bool = false
     
-    let gameManager = GameManager()
+    let gameManager = GameManager(width: 10, height: 10)
     let boardViewModel = BoardViewModel()
     
-    BoardSizePopoverView(
-        showPopover: $showPopover,
-        newWidth: $newWidth,
-        newHeight: $newHeight
-    )
-    .environment(gameManager)
-    .environment(boardViewModel)
+    BoardSizePopoverView(showPopover: $showPopover)
+        .environment(gameManager)
+        .environment(boardViewModel)
 }

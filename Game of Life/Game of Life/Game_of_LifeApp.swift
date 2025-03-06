@@ -42,7 +42,6 @@ struct Game_of_LifeApp: App {
                             let sHeight = Settings.shared.boardHeight
                             let sTickTime = Settings.shared.tickTime
                             self.gameManager = GameManager(width: sWidth, height: sHeight, tickTime: sTickTime)
-                            gameManager?.board.randomize()
                             self.boardViewModel = BoardViewModel()
                             
                             if !completedLaunch {

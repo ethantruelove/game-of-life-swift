@@ -83,9 +83,7 @@ struct MenuView: View {
                     BoardSizePopoverView(
                         gameManager: _gameManager,
                         boardViewModel: _boardViewModel,
-                        showPopover: $showBoardSizePopover,
-                        newWidth: $newWidth,
-                        newHeight: $newHeight
+                        showPopover: $showBoardSizePopover
                     )
                     .presentationCompactAdaptation(.popover)
                 }

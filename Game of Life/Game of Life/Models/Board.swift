@@ -13,7 +13,23 @@ class Board {
     let width: Int
     let height: Int
     private var lastToggledIndex: Int = -1
-    var cells: Set<Int>
+    
+    private var _cells: Set<Int> = Set<Int>()
+    // attribution: https://medium.com/@abozaid.ibrahim11/thread-safety-in-swift-a-comparison-of-locking-strategies-locks-vs-lock-free-70e872ac8e29
+    private let cellsLock = NSLock()
+    var cells: Set<Int> {
+        get {
+            cellsLock.lock()
+            defer { cellsLock.unlock() }
+            return _cells
+        }
+        set {
+            cellsLock.lock()
+            _cells = newValue
+            cellsLock.unlock()
+        }
+    }
+    
 
     private let calc = BoardCalculator()
     
@@ -93,7 +109,8 @@ class Board {
     func randomize() {
         cells.removeAll()
         let total = width * height
-        while cells.count < total / 4 {
+        
+        for _ in 0..<(total / 4) {
             cells.insert(Int.random(in: 0..<total))
         }
     }
