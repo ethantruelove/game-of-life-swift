@@ -116,6 +116,7 @@ struct MenuView: View {
                 Spacer()
                 Button(action: {
                     gameManager.toggleAutoplay()
+                    boardViewModel.editMode = .none
                 }) {
                     Image(systemName: gameManager.autoplay ? "pause.fill" : "play.fill")
                 }

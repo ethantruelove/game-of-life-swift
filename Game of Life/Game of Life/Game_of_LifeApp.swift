@@ -46,7 +46,7 @@ struct Game_of_LifeApp: App {
                             
                             if !completedLaunch {
                                 launchCount = Settings.shared.launchCount
-                                Settings.shared.setLaunchCount(launchCount)
+                                Settings.shared.setLaunchCount(launchCount + 1)
                                 completedLaunch = true
                             }
                         }
