@@ -10,6 +10,7 @@ import SwiftUI
 struct EditModeView: View {
     @Binding var showEditModes: Bool
     @Binding var editMode: EditMode
+    @Environment(GameManager.self) var gameManager
     
     var body: some View {
         ZStack {
@@ -17,11 +18,16 @@ struct EditModeView: View {
                 showEditModes: $showEditModes,
                 editMode: editMode
             )
+            .onChange(of: editMode) {
+                if editMode != .none {
+                    gameManager.autoplay = false
+                }
+            }
             
             if showEditModes {
                 VStack(spacing: 10) {
                     ForEach(EditMode.allCases, id: \.self) { mode in
-                        if mode != editMode{
+                        if mode != editMode {
                             EditModeSubButtonView(icon: mode.iconName) {
                                 editMode = mode
                             }
@@ -41,9 +47,11 @@ struct EditModeView: View {
 #Preview {
     @Previewable @State var showEditModes: Bool = false
     @Previewable @State var editMode: EditMode = .none
+    let gameManager = GameManager(width: 40, height: 80)
     
     EditModeView(
         showEditModes: $showEditModes,
         editMode: $editMode
     )
+    .environment(gameManager)
 }
