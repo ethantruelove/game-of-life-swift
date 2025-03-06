@@ -5,6 +5,7 @@
 //  Created by Ethan Truelove on 3/2/25.
 //
 
+/// A struct to handle the settings keys of interest.
 struct Keys {
     static let initialLaunch = "Initial Launch"
     static let launchCount = "Launch Count"
