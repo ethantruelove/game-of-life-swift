@@ -12,8 +12,6 @@ struct SpeedView: View {
     /// The number of generations per second to target represented as a negative log base 10 value.
     /// - Note: For example, `tickTime = 3` indicates that there should be 1,000 generations per second.
     @Binding var tickTime: Double
-    /// The function to call whenever the `tickTime` changes.
-    var onTickChange: () -> Void
     
     var body: some View {
         // attribution: https://www.hackingwithswift.com/quick-start/swiftui/how-to-create-a-slider-and-read-values-from-it
@@ -23,7 +21,6 @@ struct SpeedView: View {
                 value: $tickTime, in: -1...3,
                 onEditingChanged: { editing in
                     if !editing {
-                        onTickChange()
                         Settings.shared.setTickTime(tickTime)
                     }
             })
@@ -38,5 +35,5 @@ struct SpeedView: View {
 #Preview {
     @Previewable @State var tickTime: Double = 1
     
-    SpeedView(tickTime: $tickTime, onTickChange: {})
+    SpeedView(tickTime: $tickTime)
 }

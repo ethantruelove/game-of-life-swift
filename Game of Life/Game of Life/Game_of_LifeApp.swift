@@ -62,13 +62,6 @@ struct Game_of_LifeApp: App {
                         }
                 }
             }
-            // attribution: https://www.jessesquires.com/blog/2024/06/29/swiftui-scene-phase/
-            .onChange(of: scenePhase) { old, new in
-                // make sure splash screen does not come back when focusing back in
-                if new == .active && old == .background {
-                    showSplashScreen = false
-                }
-            }
         }
     }
 }

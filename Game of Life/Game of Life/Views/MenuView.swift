@@ -38,8 +38,7 @@ struct MenuView: View {
                     tickTime: Binding(
                         get: { gameManager.tickTime },
                         set: { gameManager.updateTickTime($0) }
-                    ),
-                    onTickChange: {}
+                    )
                 )
             }
             

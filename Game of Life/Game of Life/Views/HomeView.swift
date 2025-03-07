@@ -125,6 +125,7 @@ struct HomeView: View {
                 LoadingView()
             }
         }
+        // attribution: https://www.jessesquires.com/blog/2024/06/29/swiftui-scene-phase/
         .onChange(of: scenePhase) { old, new in
             gameManager.handleScenePhaseChange(old: old, new: new)
         }
