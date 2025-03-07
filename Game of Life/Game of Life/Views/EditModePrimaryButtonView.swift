@@ -7,8 +7,12 @@
 
 import SwiftUI
 
+
+/// A view to handle the primary button that shows the active edit mode.
 struct EditModePrimaryButtonView: View {
+    /// Indicates whether or not the other edit mode options should be shown.
     @Binding var showEditModes: Bool
+    /// The edit mode that is currently active.
     var editMode: EditMode
     
     var body: some View {

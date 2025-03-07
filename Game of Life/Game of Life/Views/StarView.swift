@@ -7,7 +7,9 @@
 
 import SwiftUI
 
+/// A view to show the number of stars that a user wants to submit as their rating.
 struct StarView: View {
+    /// The rating that the user has selected.
     @State private var rating = 0
     var body: some View {
         HStack {

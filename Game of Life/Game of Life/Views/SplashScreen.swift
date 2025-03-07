@@ -8,9 +8,13 @@
 import SwiftUI
 import Combine
 
+/// A view to show when first launching the app.
 struct SplashScreenView: View {
+    /// The board model to render.
     let board: Board = createGameOfLifeBoard()
+    /// The cell size in pixels.
     let cellSize: CGFloat = 15
+    /// The color scheme setting to know what to set the background color to.
     @Environment(\.colorScheme) var colorScheme
     
     var body: some View {
@@ -21,6 +25,8 @@ struct SplashScreenView: View {
         )
     }
     
+    /// A hardcoded board model to render the "Game of Life" on visually.
+    /// - Returns: A board model with preset cells.
     static func createGameOfLifeBoard() -> Board {
         let board = Board(width: 25, height: 20)
         

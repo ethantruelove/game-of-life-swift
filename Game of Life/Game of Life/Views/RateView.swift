@@ -7,7 +7,9 @@
 
 import SwiftUI
 
+/// A view to allow a user to rate the app.
 struct RateView: View {
+    /// Indicates whether or not the view should be shown.
     @Binding var showRateView: Bool
     
     var body: some View {

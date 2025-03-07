@@ -7,11 +7,20 @@
 
 import SwiftUI
 
+/// A view to render just the board itself and nothing else.
 struct SimpleBoardView: View {
+    /// The underlying board model to represent.
     let board: Board
+    /// The size in pixels that a single cell should occupy.
     let cellSize: CGFloat
+    /// The background color to put under the board.
     let backgroundColor: Color
     
+    /// The intializer for the simple board.
+    /// - Parameters:
+    ///   - board: The board model to show the rendering of.
+    ///   - cellSize: The cell size in pixels that a single cell should occupy.
+    ///   - backgroundColor: The background color to use inside of the board.
     init(board: Board, cellSize: CGFloat, backgroundColor: Color = Color("background")) {
         self.board = board
         self.cellSize = cellSize
@@ -28,7 +37,7 @@ struct SimpleBoardView: View {
                 with: .color(backgroundColor)
             )
             
-            
+            // only draw rectangles where there are live cells
             for idx in board.cells {
                 let col = idx % board.width
                 let row = idx / board.width

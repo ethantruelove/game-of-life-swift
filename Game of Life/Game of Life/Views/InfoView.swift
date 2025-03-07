@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+/// A view to place over everything to show the user's additional information.
 struct InfoView: View {
     var body: some View {
         VStack {

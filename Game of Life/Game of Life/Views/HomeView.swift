@@ -8,21 +8,37 @@
 import SwiftUI
 import Combine
 
+/// A view to handle the main screen the user will see and interact with.
 struct HomeView: View {
+    /// The number of times the application has been launched.
+    /// - Note: This is used to indicate whether or not the rating alert should be shown.
     private let launchCount: Int
+    /// Indicate whether or not the alert to ask for a review should be shown.
     @State private var askForReview: Bool
+    /// Indicate whether or not the screen for soliciting a rating should be shown.
     @State private var showRateView: Bool = false
+    /// Indicate whether or not the screen with interaction information should be shown.
     @State private var showInfoView: Bool = false
     
+    /// The global `GameManager` to use.
     @Environment(GameManager.self) private var gameManager
+    /// The global `BoardViewModel` to use.
     @Environment(BoardViewModel.self) private var boardViewModel
     
+    // - TODO: rename this to showEditModes
+    /// Indicate whether or not the additional edit modes should be shown.
     @State private var showSettings = false
+    /// The scene phase to allow tracking of scene changes.
     @Environment(\.scenePhase) private var scenePhase: ScenePhase
     
+    
+    /// The initializer for the view.
+    /// - Parameter launchCount: The launch count to use.
+    /// - Note: This comes from loading from settings and is passed in from the main entry point.
     init(launchCount: Int) {
         self.launchCount = launchCount
         
+        // As `launchCount` is 0 indexed, this is shown on the 5th launch
         if launchCount == 4 {
             self.askForReview = true
         } else {

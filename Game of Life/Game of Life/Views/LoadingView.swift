@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+/// A view to show the users to indicate the the board is being randomized or set.
 struct LoadingView: View {
     var body: some View {
         ZStack {

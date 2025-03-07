@@ -7,13 +7,17 @@
 
 import SwiftUI
 
+/// A view to handle the rendering and processing of the entire game board
 struct GameBoardView: View {
+    /// The global `GameManager` to use.
     @Environment(GameManager.self) var gameManager
+    /// The global `BoardViewModel` to use.
     @Environment(BoardViewModel.self) var boardViewModel
     
     var body: some View {
         GeometryReader { geometry in
             ZStack {
+                // pad the simple board view with the containing rectangle to allow panning and zooming virtually anywhere on screen
                 Rectangle()
                     .foregroundStyle(Color("dead"))
                     .frame(width: boardViewModel.cellSize * CGFloat(gameManager.board.width * boardViewModel.containerSize), height: boardViewModel.cellSize * CGFloat(gameManager.board.height * boardViewModel.containerSize))
@@ -24,6 +28,7 @@ struct GameBoardView: View {
                 )
             }
             .offset(boardViewModel.offset)
+            // size the board view appropriately at launch
             .onAppear() {
                 boardViewModel.calculateLayout(
                     boardWidth: gameManager.board.width,
@@ -32,6 +37,7 @@ struct GameBoardView: View {
                     viewHeight: geometry.size.height
                 )
             }
+            // whenever screen size or orientation changes, resize the layout
             .onChange(of: geometry.size) {
                 boardViewModel.calculateLayout(
                     boardWidth: gameManager.board.width,
@@ -46,17 +52,21 @@ struct GameBoardView: View {
         }
     }
     
+    /// The gesture handler for single finger dragging
     private var singleFingerDragGesture: some Gesture {
         DragGesture(minimumDistance: 0)
             .onChanged { value in
+                // indicate to hide UI
                 boardViewModel.isInteracting = true
                 
+                // perform panning if edit mode is none, otherwise apply the edit
                 if boardViewModel.editMode == .none {
                     boardViewModel.handlePanGesture(value: value)
                 } else {
                     boardViewModel.handleEditGesture(value: value, board: gameManager.board)
                 }
             }
+            // indicate to show UI and clean up if panned
             .onEnded { value in
                 boardViewModel.isInteracting = false
                 if boardViewModel.editMode == .none {
@@ -65,13 +75,16 @@ struct GameBoardView: View {
             }
     }
     
+    /// The gesture handler for zooming
     private var zoomGesture: some Gesture {
         MagnifyGesture()
             .onChanged { value in
+                // only set the anchor point at the very start of the zoom gesture to maintain continuous point relative to screen coordinates
                 if !boardViewModel.isZooming {
                     boardViewModel.zoomAnchorPoint = CGPoint(x: value.startLocation.x, y: value.startLocation.y)
                 }
                 boardViewModel.isZooming = true
+                // indicate to hide UI
                 boardViewModel.isInteracting = true
                 boardViewModel.handleZoomGesture(
                     value: value,
@@ -79,6 +92,7 @@ struct GameBoardView: View {
                     boardHeight: gameManager.board.height
                 )
             }
+            // clean up state and reset relevant properties
             .onEnded { _ in
                 boardViewModel.isZooming = false
                 boardViewModel.isInteracting = false

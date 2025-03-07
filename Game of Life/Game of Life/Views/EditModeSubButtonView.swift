@@ -7,8 +7,12 @@
 
 import SwiftUI
 
+
+/// A view to handle the buttons that are other options to select.
 struct EditModeSubButtonView: View {
+    /// The SF Symbol icon to render.
     let icon: String
+    /// The action to perform on button tap.
     let action: () -> Void
     
     var body: some View {

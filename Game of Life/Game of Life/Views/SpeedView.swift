@@ -7,8 +7,12 @@
 
 import SwiftUI
 
+/// A view to show the slider and visualize the tick time.
 struct SpeedView: View {
+    /// The number of generations per second to target represented as a negative log base 10 value.
+    /// - Note: For example, `tickTime = 3` indicates that there should be 1,000 generations per second.
     @Binding var tickTime: Double
+    /// The function to call whenever the `tickTime` changes.
     var onTickChange: () -> Void
     
     var body: some View {
@@ -23,6 +27,7 @@ struct SpeedView: View {
                         Settings.shared.setTickTime(tickTime)
                     }
             })
+            // convert from logarithmic to generations per second
             Text("\(String(format: "%g", pow(10, tickTime))) (gen/s)")
         }
         .padding(.horizontal)

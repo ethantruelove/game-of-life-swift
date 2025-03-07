@@ -7,9 +7,13 @@
 
 import SwiftUI
 
+/// A view for the overall edit mode handling.
 struct EditModeView: View {
+    /// Indicates whether other edit modes besides the selected one should be shown.
     @Binding var showEditModes: Bool
+    /// The currently selected edit mode.
     @Binding var editMode: EditMode
+    /// The global `GameManager` to use.
     @Environment(GameManager.self) var gameManager
     
     var body: some View {

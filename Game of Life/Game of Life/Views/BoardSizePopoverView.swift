@@ -7,14 +7,22 @@
 
 import SwiftUI
 
+/// A view for handling the popover that appears when a user wants to resize the board.
 struct BoardSizePopoverView: View {
+    /// The `GameManager` to use.
     @Environment(GameManager.self) var gameManager
+    /// The global `BoardViewModel` to use.
     @Environment(BoardViewModel.self) var boardViewModel
     
+    /// Indicates if the popover should be visible or not.
     @Binding var showPopover: Bool
+    /// Indicates if the inputted values are out of range and error message should show.
     @State private var showError = false
+    /// The error message to show, if applicable.
     @State private var errorMessage = ""
+    /// The new width of the board by cell count represented as a string for user input.
     @State private var newWidth: String = ""
+    /// The new height of the board by cell count represented as a string for user input.
     @State private var newHeight: String = ""
     
     var body: some View {

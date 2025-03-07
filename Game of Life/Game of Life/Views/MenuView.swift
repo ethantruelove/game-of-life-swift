@@ -9,17 +9,26 @@ import SwiftUI
 import Combine
 import PhotosUI
 
+/// A view to house the buttons on the main menu bar for the app.
 struct MenuView: View {
+    /// The global `GameManager` to use.
     @Environment(GameManager.self) var gameManager
+    /// The global `BoardViewModel` to use.
     @Environment(BoardViewModel.self) var boardViewModel
     
+    /// Indicates whether or not the board popover should be shown to allow users to change the board size.
     @State private var showBoardSizePopover = false
+    /// The value to show in the text field for the new width.
     @State private var newWidth = ""
+    /// The value to show in the text field for the new height.
     @State private var newHeight = ""
     
+    /// Indicates whether or not the slider to change the `tickTime` should be shown.
     @State private var showSpeedView = false
     
+    /// Holds the reference to the photo picked by the user to set a board state with.
     @State private var selectedItem: PhotosPickerItem?
+    /// Holds the reference to the data of the image picked by the user to set a board state with.
     @State private var selectedImageData: Data?
     
     var body: some View {
@@ -46,6 +55,7 @@ struct MenuView: View {
                 ) {
                     Image(systemName: "photo.on.rectangle")
                 }
+                // when the user picks a photo, get the raw data
                 .onChange(of: selectedItem) { _, newValue in
                     if let newValue {
                         Task {
@@ -57,6 +67,7 @@ struct MenuView: View {
                         }
                     }
                 }
+                // once the data has been loaded, convert it to a valid board state
                 .onChange(of: selectedImageData) {
                     if let selectedImageData, let uiImage = UIImage(data: selectedImageData) {
                         if ImageProcessor.convertImageToBoard(
@@ -126,6 +137,7 @@ struct MenuView: View {
         .padding(.vertical)
     }
     
+    /// Clean up helper to reset the relevant data objects after a user has selected an image.
     private func clearSelectedImage() {
         selectedItem = nil
         selectedImageData = nil
