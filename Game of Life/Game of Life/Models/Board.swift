@@ -110,7 +110,7 @@ class Board {
     /// An asynchronous calculation of the next generation.
     func tickAsync() async {
         let gen = await calc.startCalc()
-        if let nextGen = await calc.calcNextGen(board: self, gen: gen) {
+        if let nextGen = await calc.calcNextGen(board: self.copy(), gen: gen) {
             await MainActor.run {
                 self.cells = nextGen
             }
@@ -151,5 +151,13 @@ class Board {
         for _ in 0..<(total / 4) {
             cells.insert(Int.random(in: 0..<total))
         }
+    }
+    
+    /// Make a copy of the `Board` object.
+    /// - Returns: A new `Board` object.
+    func copy() -> Board {
+        let newBoard = Board(width: self.width, height: self.height)
+        newBoard.cells = self.cells
+        return newBoard
     }
 }

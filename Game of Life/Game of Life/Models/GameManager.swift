@@ -76,7 +76,7 @@ class GameManager {
     /// - Returns: The Task object of the next generation's calculation.
     func tick() -> Task<Void, Never>? {
         // do not schedule the next generation if one is currently being calculated
-        guard !isProcessingTick else { return nil }
+        guard !isProcessingTick else { return currentTick }
         return Task {
             await MainActor.run { isProcessingTick = true }
             await board.tickAsync()
