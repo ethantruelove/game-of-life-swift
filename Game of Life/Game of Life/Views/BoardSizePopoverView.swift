@@ -69,7 +69,7 @@ struct BoardSizePopoverView: View {
                         if pixels >= 1 && pixels < 1000000 {
                             showPopover = false
                             gameManager.resizeBoard(width: width, height: height)
-                            boardViewModel.resizeBoard(width: width, height: height, boardWidth: gameManager.board.width, boardHeight: gameManager.board.height)
+                            boardViewModel.resizeBoard(width: width, height: height)
                         } else {
                             errorMessage = "Total area must be between 1 and 1 million"
                             showError = true

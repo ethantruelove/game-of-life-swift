@@ -113,7 +113,7 @@ struct ImageProcessor {
             }
             
             // perform recalculations for the view model based on our new board model
-            boardViewModel.resizeBoard(width: width, height: height, boardWidth: width, boardHeight: height)
+            boardViewModel.resizeBoard(width: width, height: height)
             boardViewModel.initialOffset = boardViewModel.calculateOffsetForContainingView(boardWidth: width, boardHeight: height)
             boardViewModel.offset = boardViewModel.initialOffset
             boardViewModel.lastOffset = boardViewModel.initialOffset

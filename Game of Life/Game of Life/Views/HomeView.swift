@@ -25,9 +25,8 @@ struct HomeView: View {
     /// The global `BoardViewModel` to use.
     @Environment(BoardViewModel.self) private var boardViewModel
     
-    // - TODO: rename this to showEditModes
     /// Indicate whether or not the additional edit modes should be shown.
-    @State private var showSettings = false
+    @State private var showEditModes = false
     /// The scene phase to allow tracking of scene changes.
     @Environment(\.scenePhase) private var scenePhase: ScenePhase
     
@@ -75,7 +74,7 @@ struct HomeView: View {
                             .padding(.leading)
                             Spacer()
                             EditModeView(
-                                showEditModes: $showSettings,
+                                showEditModes: $showEditModes,
                                 editMode: Binding(
                                     get: { boardViewModel.editMode },
                                     set: { boardViewModel.editMode = $0 }

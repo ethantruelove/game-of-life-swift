@@ -82,16 +82,15 @@ class BoardViewModel {
         cellSize = baseCellSize
     }
     
-    // - TODO: revisit and see if these are redundant params
     /// Resize the board when the user wants a new board size.
     /// - Parameters:
     ///   - width: The width of the board.
     ///   - height: The height of the board.
     ///   - boardWidth: The width of the board.
     ///   - boardHeight: The height of the board.
-    func resizeBoard(width: Int, height: Int, boardWidth: Int, boardHeight: Int) {
+    func resizeBoard(width: Int, height: Int) {
         baseCellSize = min(boardViewWidth / CGFloat(width), boardViewHeight / CGFloat(height))
-        initialOffset = calculateOffsetForContainingView(boardWidth: boardWidth, boardHeight: boardHeight)
+        initialOffset = calculateOffsetForContainingView(boardWidth: width, boardHeight: height)
         
         resetView()
     }
